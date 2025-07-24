@@ -52,8 +52,6 @@ class DashboardController extends AbstractController
             'active_onboardings' => $this->getActiveOnboardings($entityManager),
             'open_tasks' => $this->getOpenTasks($entityManager),
             'overdue_tasks' => count($this->getOverdueTasks($entityManager)),
-            'total_types' => $this->getTotalOnboardingTypes($entityManager),
-            'total_base_types' => $this->getTotalBaseTypes($entityManager),
         ];
     }
 
@@ -117,27 +115,4 @@ class DashboardController extends AbstractController
             ->getResult();
     }
 
-    /**
-     * Gesamtzahl der OnboardingTypes.
-     */
-    private function getTotalOnboardingTypes(EntityManagerInterface $entityManager): int
-    {
-        return $entityManager->getRepository(OnboardingType::class)
-            ->createQueryBuilder('ot')
-            ->select('COUNT(ot.id)')
-            ->getQuery()
-            ->getSingleScalarResult();
-    }
-
-    /**
-     * Gesamtzahl der BaseTypes.
-     */
-    private function getTotalBaseTypes(EntityManagerInterface $entityManager): int
-    {
-        return $entityManager->getRepository(BaseType::class)
-            ->createQueryBuilder('bt')
-            ->select('COUNT(bt.id)')
-            ->getQuery()
-            ->getSingleScalarResult();
-    }
 }
