@@ -133,7 +133,12 @@ class TaskService
 
         $sendEmail = $request->request->get('sendEmail');
         if ($sendEmail) {
-            $task->setEmailTemplate($request->request->get('emailTemplate'));
+            $template = $request->request->get('emailTemplate');
+            $uploadedFile = $request->files->get('emailTemplateFile');
+            if ($uploadedFile && $uploadedFile->isValid()) {
+                $template = file_get_contents($uploadedFile->getPathname());
+            }
+            $task->setEmailTemplate($template);
         } else {
             $task->setEmailTemplate(null);
         }

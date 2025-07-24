@@ -197,4 +197,24 @@ class OnboardingAdminController extends AbstractController
 
         return $this->redirectToRoute('app_admin_task_block_tasks', ['id' => $taskBlock->getId()]);
     }
+
+    #[Route('/task-blocks/{id}/tasks/{taskId}/download-template', name: 'app_admin_task_download_template', requirements: ['id' => '\\d+', 'taskId' => '\\d+'], methods: ['GET'])]
+    public function downloadTemplate(TaskBlock $taskBlock, int $taskId, EntityManagerInterface $entityManager): Response
+    {
+        $task = $entityManager->getRepository(Task::class)->find($taskId);
+        if (!$task || $task->getTaskBlock()->getId() !== $taskBlock->getId()) {
+            throw $this->createNotFoundException('Task not found');
+        }
+
+        $content = $task->getEmailTemplate();
+        if (null === $content) {
+            throw $this->createNotFoundException('Template not found');
+        }
+
+        $response = new Response($content);
+        $response->headers->set('Content-Type', 'text/html');
+        $response->headers->set('Content-Disposition', 'attachment; filename="email-template-' . $task->getId() . '.html"');
+
+        return $response;
+    }
 }
