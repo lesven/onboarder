@@ -7,7 +7,7 @@ use App\Entity\Onboarding;
 use App\Entity\OnboardingTask;
 use App\Entity\OnboardingType;
 use App\Entity\Role;
-use App\Service\OnboardingTaskService;
+use App\Service\OnboardingTaskFacade;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,7 +16,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class DashboardController extends AbstractController
 {
-    public function __construct(private readonly OnboardingTaskService $taskService)
+    public function __construct(private readonly OnboardingTaskFacade $taskService)
     {
     }
 
