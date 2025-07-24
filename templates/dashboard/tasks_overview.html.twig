@@ -40,9 +40,11 @@
                                 <label class="form-label">Zuständigkeit</label>
                                 <select name="assignee" class="form-select form-select-sm">
                                     <option value="">Alle</option>
-                                    <option value="it" {% if assigneeFilter == 'it' %}selected{% endif %}>IT</option>
-                                    <option value="hr" {% if assigneeFilter == 'hr' %}selected{% endif %}>HR</option>
-                                    <option value="manager" {% if assigneeFilter == 'manager' %}selected{% endif %}>Vorgesetzter</option>
+                                    {% for role in roles %}
+                                        <option value="{{ role.name }}" {% if assigneeFilter == role.name %}selected{% endif %}>
+                                            {{ role.name }} ({{ role.email }})
+                                        </option>
+                                    {% endfor %}
                                 </select>
                             </div>
                             <div class="col-md-3">
