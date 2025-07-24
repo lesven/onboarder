@@ -8,6 +8,7 @@ use App\Entity\Role;
 use App\Entity\Task;
 use App\Entity\TaskBlock;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -25,11 +26,11 @@ class OnboardingTaskService
     }
 
     /**
-     * Generates {@link OnboardingTask} entities for the provided onboarding.
+     * Generiert OnboardingTask-Entitäten für das übergebene Onboarding.
      *
-     * All tasks defined on the onboarding type and its optional base type are
-     * created and persisted. Duplicate task blocks are filtered out to avoid
-     * generating the same tasks twice.
+     * Alle Tasks, die im OnboardingType und dessen optionalem BaseType definiert sind,
+     * werden erstellt und persistiert. Duplikate von TaskBlocks werden herausgefiltert,
+     * um das doppelte Generieren derselben Tasks zu vermeiden.
      */
     public function generateForOnboarding(Onboarding $onboarding): void
     {
@@ -44,7 +45,10 @@ class OnboardingTaskService
     }
 
     /**
-     * Returns all unique {@link TaskBlock} instances for the onboarding's type.
+     * Sammelt alle eindeutigen TaskBlock-Instanzen für den OnboardingType.
+     *
+     * Kombiniert TaskBlocks aus dem direkten OnboardingType und dessen BaseType,
+     * wobei Duplikate automatisch herausgefiltert werden.
      *
      * @return TaskBlock[]
      */
@@ -79,7 +83,10 @@ class OnboardingTaskService
     }
 
     /**
-     * Creates an {@link OnboardingTask} from a template task.
+     * Erstellt eine OnboardingTask aus einer Template-Task.
+     *
+     * Kopiert alle relevanten Eigenschaften von der Template-Task und
+     * wendet spezifische Onboarding-Daten wie Fälligkeitsdaten an.
      */
     private function createTaskFromTemplate(Task $template, Onboarding $onboarding, TaskBlock $block): OnboardingTask
     {
@@ -98,6 +105,12 @@ class OnboardingTaskService
         return $task;
     }
 
+    /**
+     * Wendet das Fälligkeitsdatum aus der Template-Task auf die OnboardingTask an.
+     *
+     * Behandelt sowohl absolute Fälligkeitsdaten als auch relative Daten
+     * basierend auf dem Eintrittsdatum des Mitarbeiters.
+     */
     private function applyTemplateDueDate(OnboardingTask $task, Task $template, ?\DateTimeImmutable $entryDate): void
     {
         if ($template->getDueDate()) {
@@ -118,6 +131,11 @@ class OnboardingTaskService
         $task->setDueDaysFromEntry($days);
     }
 
+    /**
+     * Wendet Zuweisungseinstellungen aus der Template-Task an.
+     *
+     * Überträgt sowohl rollenbasierte als auch direkte E-Mail-Zuweisungen.
+     */
     private function applyTemplateAssignments(OnboardingTask $task, Task $template): void
     {
         if ($template->getAssignedRole()) {
@@ -129,6 +147,11 @@ class OnboardingTaskService
         }
     }
 
+    /**
+     * Wendet E-Mail-Konfiguration aus der Template-Task an.
+     *
+     * Aktiviert automatisch E-Mail-Versand, wenn ein E-Mail-Template vorhanden ist.
+     */
     private function applyTemplateEmail(OnboardingTask $task, Task $template): void
     {
         if ($template->getEmailTemplate()) {
@@ -137,7 +160,12 @@ class OnboardingTaskService
         }
     }
 
-    private function applyStatusFilter(\Doctrine\ORM\QueryBuilder $qb, string $status): void
+    /**
+     * Wendet Statusfilter auf den QueryBuilder an.
+     *
+     * Unterstützt Filter für 'completed', 'overdue', 'all' und Standard (offene Tasks).
+     */
+    private function applyStatusFilter(QueryBuilder $qb, string $status): void
     {
         if ('completed' === $status) {
             $qb->where('ot.status = :completed')
@@ -161,7 +189,10 @@ class OnboardingTaskService
     }
 
     /**
-     * Recalculates relative due dates after the onboarding entry date changes.
+     * Berechnet relative Fälligkeitsdaten nach Änderung des Eintrittsdatums neu.
+     *
+     * Durchläuft alle OnboardingTasks und aktualisiert nur die Tasks mit
+     * relativen Fälligkeitsdaten basierend auf dem neuen Eintrittsdatum.
      */
     public function updateDueDates(Onboarding $onboarding): void
     {
@@ -177,6 +208,11 @@ class OnboardingTaskService
         $this->entityManager->flush();
     }
 
+    /**
+     * Aktualisiert das Fälligkeitsdatum einer einzelnen Task.
+     *
+     * Nur Tasks mit relativen Fälligkeitsdaten werden aktualisiert.
+     */
     private function updateTaskDueDate(OnboardingTask $task, \DateTimeImmutable $entryDate): void
     {
         if (null === $task->getDueDaysFromEntry()) {
@@ -245,7 +281,9 @@ class OnboardingTaskService
     }
 
     /**
-     * Creates a new {@link OnboardingTask} using data from the given request.
+     * Erstellt eine neue OnboardingTask mit Daten aus dem Request.
+     *
+     * Die Task wird sofort persistiert und zurückgegeben.
      */
     public function createOnboardingTask(Onboarding $onboarding, Request $request): OnboardingTask
     {
@@ -260,7 +298,9 @@ class OnboardingTaskService
     }
 
     /**
-     * Updates an existing {@link OnboardingTask} with data from the request.
+     * Aktualisiert eine bestehende OnboardingTask mit Daten aus dem Request.
+     *
+     * Setzt das updatedAt-Feld und persistiert die Änderungen.
      */
     public function updateOnboardingTask(OnboardingTask $task, Request $request): OnboardingTask
     {
@@ -271,6 +311,11 @@ class OnboardingTaskService
         return $task;
     }
 
+    /**
+     * Befüllt eine OnboardingTask mit Daten aus dem HTTP-Request.
+     *
+     * Zentrale Methode zur Verarbeitung aller Task-Eigenschaften aus Formulardaten.
+     */
     private function populateFromRequest(OnboardingTask $task, Onboarding $onboarding, Request $request): void
     {
         $task->setTitle($request->request->get('title'));
@@ -282,6 +327,11 @@ class OnboardingTaskService
         $this->applyEmailFromRequest($task, $request);
     }
 
+    /**
+     * Wendet Fälligkeitsdatum-Einstellungen aus dem Request an.
+     *
+     * Unterstützt drei Modi: 'none', 'fixed' (absolutes Datum) und 'relative' (Tage ab Eintritt).
+     */
     private function applyDueDateFromRequest(OnboardingTask $task, Onboarding $onboarding, Request $request): void
     {
         $dueType = $request->request->get('dueDateType', 'none');
@@ -321,6 +371,11 @@ class OnboardingTaskService
         $task->setDueDaysFromEntry(null);
     }
 
+    /**
+     * Wendet Zuweisungseinstellungen aus dem Request an.
+     *
+     * Behandelt sowohl rollenbasierte als auch direkte E-Mail-Zuweisungen.
+     */
     private function applyAssignmentFromRequest(OnboardingTask $task, Request $request): void
     {
         $roleId = $request->request->get('assignedRole');
@@ -335,6 +390,11 @@ class OnboardingTaskService
         $task->setAssignedEmail($email ?: null);
     }
 
+    /**
+     * Wendet E-Mail-Konfiguration aus dem Request an.
+     *
+     * Aktiviert E-Mail-Versand und setzt das Template, falls entsprechende Daten vorhanden sind.
+     */
     private function applyEmailFromRequest(OnboardingTask $task, Request $request): void
     {
         if ($request->request->get('sendEmail')) {
