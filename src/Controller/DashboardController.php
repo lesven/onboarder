@@ -8,6 +8,7 @@ use App\Entity\OnboardingType;
 use App\Entity\Task;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -86,6 +87,45 @@ class DashboardController extends AbstractController
             'onboardings' => $onboardings,
             'stats' => $stats,
             'overdueTasks' => $overdueTasks,
+        ]);
+    }
+
+    #[Route('/onboarding/new', name: 'app_onboarding_new')]
+    public function newOnboarding(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        if ($request->isMethod('POST')) {
+            $onboarding = new Onboarding();
+            $onboarding->setFirstName($request->request->get('firstName'));
+            $onboarding->setLastName($request->request->get('lastName'));
+            $onboarding->setEntryDate(new \DateTimeImmutable($request->request->get('entryDate')));
+            $onboarding->setPosition($request->request->get('position'));
+            $onboarding->setTeam($request->request->get('team'));
+            $onboarding->setManager($request->request->get('manager'));
+            $onboarding->setManagerEmail($request->request->get('managerEmail'));
+            $onboarding->setBuddy($request->request->get('buddy'));
+            $onboarding->setBuddyEmail($request->request->get('buddyEmail'));
+            
+            // OnboardingType zuweisen falls ausgewählt
+            $onboardingTypeId = $request->request->get('onboardingType');
+            if ($onboardingTypeId) {
+                $onboardingType = $entityManager->getRepository(OnboardingType::class)->find($onboardingTypeId);
+                if ($onboardingType) {
+                    $onboarding->setOnboardingType($onboardingType);
+                }
+            }
+
+            $entityManager->persist($onboarding);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Onboarding für ' . $onboarding->getFullName() . ' wurde erfolgreich erstellt!');
+            return $this->redirectToRoute('app_onboardings');
+        }
+
+        // OnboardingTypes für das Formular laden
+        $onboardingTypes = $entityManager->getRepository(OnboardingType::class)->findAll();
+
+        return $this->render('dashboard/onboarding_form.html.twig', [
+            'onboardingTypes' => $onboardingTypes,
         ]);
     }
 

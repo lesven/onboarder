@@ -106,4 +106,36 @@ class AdminController extends AbstractController
 
         return $this->render('admin/role_form.html.twig');
     }
+
+    #[Route('/onboarding-type/new', name: 'app_admin_onboarding_type_new')]
+    public function newOnboardingType(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        if ($request->isMethod('POST')) {
+            $onboardingType = new OnboardingType();
+            $onboardingType->setName($request->request->get('name'));
+            $onboardingType->setDescription($request->request->get('description'));
+            
+            // BaseType zuweisen falls ausgewählt
+            $baseTypeId = $request->request->get('baseType');
+            if ($baseTypeId) {
+                $baseType = $entityManager->getRepository(BaseType::class)->find($baseTypeId);
+                if ($baseType) {
+                    $onboardingType->setBaseType($baseType);
+                }
+            }
+
+            $entityManager->persist($onboardingType);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'OnboardingType wurde erfolgreich erstellt!');
+            return $this->redirectToRoute('app_admin_onboarding_types');
+        }
+
+        // BaseTypes für das Formular laden
+        $baseTypes = $entityManager->getRepository(BaseType::class)->findAll();
+
+        return $this->render('admin/onboarding_type_form.html.twig', [
+            'baseTypes' => $baseTypes,
+        ]);
+    }
 }

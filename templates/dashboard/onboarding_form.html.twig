@@ -1,0 +1,140 @@
+{% extends 'base_clean.html.twig' %}
+
+{% block title %}Neues Onboarding - {{ parent() }}{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1><i class="bi bi-person-plus me-2"></i>Neues Onboarding</h1>
+        <p class="text-muted mb-0">Erstellen Sie ein neues Onboarding für einen Mitarbeiter</p>
+    </div>
+    <a href="{{ path('app_onboardings') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Zurück zur Übersicht
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-person-plus me-2"></i>Mitarbeiter-Daten</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="firstName" class="form-label">Vorname *</label>
+                                <input type="text" class="form-control" id="firstName" name="firstName" placeholder="Max" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="lastName" class="form-label">Nachname *</label>
+                                <input type="text" class="form-control" id="lastName" name="lastName" placeholder="Mustermann" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="entryDate" class="form-label">Eintrittsdatum *</label>
+                                <input type="date" class="form-control" id="entryDate" name="entryDate" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="position" class="form-label">Position</label>
+                                <input type="text" class="form-control" id="position" name="position" placeholder="z.B. Software Developer">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="team" class="form-label">Team</label>
+                                <input type="text" class="form-control" id="team" name="team" placeholder="z.B. IT-Entwicklung">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="onboardingType" class="form-label">Onboarding-Typ</label>
+                                <select class="form-select" id="onboardingType" name="onboardingType">
+                                    <option value="">Bitte wählen...</option>
+                                    {% for type in onboardingTypes %}
+                                        <option value="{{ type.id }}">{{ type.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="manager" class="form-label">Führungskraft</label>
+                                <input type="text" class="form-control" id="manager" name="manager" placeholder="Name des direkten Vorgesetzten">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="managerEmail" class="form-label">E-Mail Führungskraft</label>
+                                <input type="email" class="form-control" id="managerEmail" name="managerEmail" placeholder="fk@arz.de">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="buddy" class="form-label">Buddy</label>
+                                <input type="text" class="form-control" id="buddy" name="buddy" placeholder="Name des Onboarding-Buddys">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="buddyEmail" class="form-label">Buddy E-Mail</label>
+                                <input type="email" class="form-control" id="buddyEmail" name="buddyEmail" placeholder="buddy@arz.de">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle me-1"></i>Onboarding erstellen
+                        </button>
+                        <a href="{{ path('app_onboardings') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-1"></i>Abbrechen
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card bg-light">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-info-circle me-1"></i>Hinweise</h6>
+            </div>
+            <div class="card-body">
+                <h6>Pflichtfelder</h6>
+                <p class="small">Die Felder <strong>Vorname</strong>, <strong>Nachname</strong> und <strong>Eintrittsdatum</strong> sind erforderlich.</p>
+                
+                <h6>Onboarding-Typ</h6>
+                <p class="small">Wählen Sie einen Onboarding-Typ um automatisch die entsprechenden Aufgaben zu erstellen.</p>
+
+                <h6>Manager & Buddy</h6>
+                <p class="small">Der Manager ist der direkte Vorgesetzte. Der Buddy ist ein erfahrener Mitarbeiter, der beim Einarbeiten hilft.</p>
+
+                <div class="alert alert-info small">
+                    <i class="bi bi-lightbulb me-1"></i>
+                    <strong>Tipp:</strong> Nach dem Erstellen können Sie individuelle Aufgaben hinzufügen oder anpassen.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

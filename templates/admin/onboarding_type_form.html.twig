@@ -1,0 +1,95 @@
+{% extends 'base_clean.html.twig' %}
+
+{% block title %}Neuer OnboardingType - Administration - {{ parent() }}{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1><i class="bi bi-collection me-2"></i>Neuer OnboardingType</h1>
+        <p class="text-muted mb-0">Erstellen Sie einen neuen OnboardingType basierend auf einem BaseType</p>
+    </div>
+    <a href="{{ path('app_admin_onboarding_types') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Zurück zur Übersicht
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-plus-circle me-2"></i>OnboardingType Details</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                
+                <div class="mb-3">
+                    <label for="name" class="form-label">Name</label>
+                    <input type="text" class="form-control" id="name" name="name" placeholder="Geben Sie den Namen des OnboardingTypes ein..." required>
+                    <div class="form-text">
+                        Der Name des OnboardingTypes, z.B. "Software Developer Onboarding" oder "HR Mitarbeiter"
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="baseType" class="form-label">BaseType</label>
+                    <select class="form-select" id="baseType" name="baseType">
+                        <option value="">Kein BaseType (optional)</option>
+                        {% for baseType in baseTypes %}
+                            <option value="{{ baseType.id }}">{{ baseType.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-text">
+                        Wählen Sie einen BaseType als Vorlage. Die Task-Blöcke und Aufgaben werden automatisch übernommen.
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="description" class="form-label">Beschreibung</label>
+                    <textarea class="form-control" id="description" name="description" rows="4" placeholder="Beschreiben Sie den Zweck und Inhalt dieses OnboardingTypes..."></textarea>
+                    <div class="form-text">
+                        Eine detaillierte Beschreibung des OnboardingTypes und wofür er verwendet wird
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle me-1"></i>OnboardingType erstellen
+                    </button>
+                    <a href="{{ path('app_admin_onboarding_types') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle me-1"></i>Abbrechen
+                    </a>
+                </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card bg-light">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-info-circle me-1"></i>Hinweise</h6>
+            </div>
+            <div class="card-body">
+                <h6>Was ist ein OnboardingType?</h6>
+                <p class="small">OnboardingTypes sind konkrete Konfigurationen für bestimmte Rollen oder Abteilungen. Sie werden aus BaseTypes abgeleitet und für tatsächliche Onboarding-Prozesse verwendet.</p>
+                
+                <h6>BaseType vs OnboardingType</h6>
+                <ul class="small">
+                    <li><strong>BaseType:</strong> Wiederverwendbare Vorlage</li>
+                    <li><strong>OnboardingType:</strong> Konkrete Implementierung</li>
+                    <li>Änderungen am BaseType wirken sich auf alle OnboardingTypes aus</li>
+                </ul>
+
+                <h6>Verwendung</h6>
+                <p class="small">OnboardingTypes werden beim Erstellen neuer Onboardings ausgewählt und bestimmen, welche Aufgaben automatisch erstellt werden.</p>
+
+                <div class="alert alert-info small">
+                    <i class="bi bi-lightbulb me-1"></i>
+                    <strong>Tipp:</strong> Wählen Sie einen passenden BaseType um Zeit zu sparen. Sie können später individuelle Anpassungen vornehmen.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

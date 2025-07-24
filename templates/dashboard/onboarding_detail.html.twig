@@ -40,11 +40,27 @@
                     </tr>
                     <tr>
                         <td><strong>Manager:</strong></td>
-                        <td>{{ onboarding.manager ?? 'Nicht angegeben' }}</td>
+                        <td>
+                            {{ onboarding.manager ?? 'Nicht angegeben' }}
+                            {% if onboarding.managerEmail %}
+                                <br><small class="text-muted">
+                                    <i class="bi bi-envelope me-1"></i>
+                                    <a href="mailto:{{ onboarding.managerEmail }}" class="text-decoration-none">{{ onboarding.managerEmail }}</a>
+                                </small>
+                            {% endif %}
+                        </td>
                     </tr>
                     <tr>
                         <td><strong>Buddy:</strong></td>
-                        <td>{{ onboarding.buddy ?? 'Nicht angegeben' }}</td>
+                        <td>
+                            {{ onboarding.buddy ?? 'Nicht angegeben' }}
+                            {% if onboarding.buddyEmail %}
+                                <br><small class="text-muted">
+                                    <i class="bi bi-envelope me-1"></i>
+                                    <a href="mailto:{{ onboarding.buddyEmail }}" class="text-decoration-none">{{ onboarding.buddyEmail }}</a>
+                                </small>
+                            {% endif %}
+                        </td>
                     </tr>
                     <tr>
                         <td><strong>Onboarding-Typ:</strong></td>
