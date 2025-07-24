@@ -14,7 +14,10 @@ start: ## Startet Docker Container
 
 stop: ## Stoppt Docker Container
 	$(DOCKER_COMPOSE) down
-
+deploy:
+	git pull
+	make install
+	
 install: ## Baut Container, installiert Abhängigkeiten und führt Setup aus
 	$(DOCKER_COMPOSE) up -d --build
 	$(DOCKER_COMPOSE) exec app composer install --no-interaction
@@ -25,6 +28,9 @@ install: ## Baut Container, installiert Abhängigkeiten und führt Setup aus
 	@echo "Installation abgeschlossen!"
 	$(DOCKER_COMPOSE) exec --workdir /var/www/html app /usr/local/bin/php-cs-fixer fix --diff --allow-risky=yes
 	@echo "CS Fixer abgeschlossen!"
+
+cache: ## Leert den Symfony Cache
+	$(DOCKER_COMPOSE) exec app php bin/console cache:clear
 
 setup: ## Führt das Setup-Skript aus (nach erstem Start)
 	$(DOCKER_COMPOSE) exec app /var/www/html/docker/setup-entities.sh
