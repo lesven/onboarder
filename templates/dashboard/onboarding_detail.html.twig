@@ -172,6 +172,7 @@
                                                     <i class="bi bi-pencil"></i>
                                                 </a>
                                                 <form method="post" action="{{ path('app_onboarding_task_delete', {'id': task.id}) }}" style="display:inline-block" onsubmit="return confirm('Aufgabe wirklich l\u00f6schen?');">
+                                                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('app_onboarding_task_delete') }}">
                                                     <button type="submit" class="btn btn-sm btn-outline-danger" title="L\u00f6schen"><i class="bi bi-trash"></i></button>
                                                 </form>
                                             </td>
