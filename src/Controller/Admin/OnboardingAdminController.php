@@ -84,7 +84,7 @@ class OnboardingAdminController extends AbstractController
         ]);
     }
 
-    #[Route('/admin/task-blocks/{id}/edit', name: 'app_admin_task_block_edit', requirements: ['id' => '\\d+'], methods: ['GET', 'POST'])]
+    #[Route('/task-blocks/{id}/edit', name: 'app_admin_task_block_edit', requirements: ['id' => '\\d+'], methods: ['GET', 'POST'])]
     public function editTaskBlock(TaskBlock $taskBlock, Request $request, EntityManagerInterface $entityManager): Response
     {
         if ($request->isMethod('POST')) {
