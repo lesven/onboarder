@@ -1,10 +1,7 @@
 .PHONY: help start stop install setup shell console logs clean migration migrate
 
 # Docker Compose Command (kann für CI überschrieben werden)
-DOCKER_COMPOSE := docker-compose
-ifeq ($(CI),true)
-    DOCKER_COMPOSE := docker compose
-endif
+DOCKER_COMPOSE := docker compose
 
 help: ## Zeigt verfügbare Befehle
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
@@ -17,7 +14,7 @@ stop: ## Stoppt Docker Container
 deploy:
 	git pull
 	make install
-	
+
 install: ## Baut Container, installiert Abhängigkeiten und führt Setup aus
 	$(DOCKER_COMPOSE) up -d --build
 	$(DOCKER_COMPOSE) exec app composer install --no-interaction
