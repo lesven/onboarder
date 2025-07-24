@@ -1,12 +1,15 @@
 {% extends 'base_clean.html.twig' %}
 
-{% block title %}Neuer OnboardingType - Administration - {{ parent() }}{% endblock %}
+{% set edit = onboardingType is defined %}
+{% block title %}{{ edit ? 'OnboardingType bearbeiten' : 'Neuer OnboardingType' }} - Administration - {{ parent() }}{% endblock %}
 
 {% block body %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h1><i class="bi bi-collection me-2"></i>Neuer OnboardingType</h1>
-        <p class="text-muted mb-0">Erstellen Sie einen neuen OnboardingType basierend auf einem BaseType</p>
+        <h1><i class="bi bi-collection me-2"></i>{{ edit ? 'OnboardingType bearbeiten' : 'Neuer OnboardingType' }}</h1>
+        <p class="text-muted mb-0">
+            {{ edit ? 'Bearbeiten Sie einen bestehenden OnboardingType' : 'Erstellen Sie einen neuen OnboardingType basierend auf einem BaseType' }}
+        </p>
     </div>
     <a href="{{ path('app_admin_onboarding_types') }}" class="btn btn-outline-secondary">
         <i class="bi bi-arrow-left me-1"></i>Zurück zur Übersicht
@@ -24,7 +27,7 @@
                 
                 <div class="mb-3">
                     <label for="name" class="form-label">Name</label>
-                    <input type="text" class="form-control" id="name" name="name" placeholder="Geben Sie den Namen des OnboardingTypes ein..." required>
+                    <input type="text" class="form-control" id="name" name="name" value="{{ onboardingType.name ?? '' }}" placeholder="Geben Sie den Namen des OnboardingTypes ein..." required>
                     <div class="form-text">
                         Der Name des OnboardingTypes, z.B. "Software Developer Onboarding" oder "HR Mitarbeiter"
                     </div>
@@ -35,7 +38,7 @@
                     <select class="form-select" id="baseType" name="baseType">
                         <option value="">Kein BaseType (optional)</option>
                         {% for baseType in baseTypes %}
-                            <option value="{{ baseType.id }}">{{ baseType.name }}</option>
+                            <option value="{{ baseType.id }}" {% if onboardingType.baseType is defined and onboardingType.baseType and baseType.id == onboardingType.baseType.id %}selected{% endif %}>{{ baseType.name }}</option>
                         {% endfor %}
                     </select>
                     <div class="form-text">
@@ -45,7 +48,7 @@
 
                 <div class="mb-3">
                     <label for="description" class="form-label">Beschreibung</label>
-                    <textarea class="form-control" id="description" name="description" rows="4" placeholder="Beschreiben Sie den Zweck und Inhalt dieses OnboardingTypes..."></textarea>
+                    <textarea class="form-control" id="description" name="description" rows="4" placeholder="Beschreiben Sie den Zweck und Inhalt dieses OnboardingTypes...">{{ onboardingType.description ?? '' }}</textarea>
                     <div class="form-text">
                         Eine detaillierte Beschreibung des OnboardingTypes und wofür er verwendet wird
                     </div>
@@ -53,7 +56,7 @@
 
                 <div class="d-flex justify-content-between">
                     <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-circle me-1"></i>OnboardingType erstellen
+                        <i class="bi bi-check-circle me-1"></i>{{ edit ? 'OnboardingType speichern' : 'OnboardingType erstellen' }}
                     </button>
                     <a href="{{ path('app_admin_onboarding_types') }}" class="btn btn-outline-secondary">
                         <i class="bi bi-x-circle me-1"></i>Abbrechen

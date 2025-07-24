@@ -1,0 +1,47 @@
+{% extends 'base_clean.html.twig' %}
+
+{% block title %}OnboardingType {{ onboardingType.name }} - Administration - {{ parent() }}{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1><i class="bi bi-collection me-2"></i>{{ onboardingType.name }}</h1>
+        <p class="text-muted mb-0">Details des OnboardingTypes</p>
+    </div>
+    <a href="{{ path('app_admin_onboarding_types') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Zurück zur Übersicht
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <dl class="row mb-4">
+            <dt class="col-sm-3">ID</dt>
+            <dd class="col-sm-9">{{ onboardingType.id }}</dd>
+
+            <dt class="col-sm-3">BaseType</dt>
+            <dd class="col-sm-9">
+                {% if onboardingType.baseType %}
+                    {{ onboardingType.baseType.name }}
+                {% else %}
+                    <span class="text-muted">Kein BaseType</span>
+                {% endif %}
+            </dd>
+
+            <dt class="col-sm-3">Beschreibung</dt>
+            <dd class="col-sm-9">{{ onboardingType.description ?? '-' }}</dd>
+
+            <dt class="col-sm-3">Erstellt</dt>
+            <dd class="col-sm-9">{{ onboardingType.createdAt|date('d.m.Y H:i') }}</dd>
+        </dl>
+        <div class="d-flex justify-content-end">
+            <a href="{{ path('app_admin_onboarding_type_edit', {'id': onboardingType.id}) }}" class="btn btn-warning me-2">
+                <i class="bi bi-pencil"></i> Bearbeiten
+            </a>
+            <a href="{{ path('app_admin_onboarding_type_delete', {'id': onboardingType.id}) }}" class="btn btn-danger" onclick="return confirm('Wirklich löschen?');">
+                <i class="bi bi-trash"></i> Löschen
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
