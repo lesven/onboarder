@@ -12,7 +12,7 @@ stop: ## Stoppt Docker Container
 install: ## Baut Container, installiert Abhängigkeiten und führt Setup aus
 	docker-compose up -d --build
 	docker-compose exec app composer install --no-interaction
-	docker-compose exec app /var/www/html/setup.sh
+	docker-compose exec app /var/www/html/docker/setup-entities.sh
 
 setup: ## Führt das Setup-Skript aus (nach erstem Start)
 	docker-compose exec app /var/www/html/docker/setup-entities.sh
