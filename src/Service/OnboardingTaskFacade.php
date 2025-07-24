@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Facade-Service für OnboardingTask-Operationen.
- * 
+ *
  * Koordiniert spezialisierte Services und stellt eine einheitliche API bereit.
  */
 class OnboardingTaskFacade

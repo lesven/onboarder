@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\OnboardingTask;
-use App\Entity\Role;
 use App\Service\OnboardingTaskFacade;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

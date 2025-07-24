@@ -64,7 +64,7 @@ class TaskRequestMappingService
     private function applyDueDateFromRequest(OnboardingTask $task, Onboarding $onboarding, Request $request): void
     {
         $dueType = $request->request->get('dueDateType', 'none');
-        
+
         if ('fixed' === $dueType) {
             $dueDate = $request->request->get('dueDate');
             if ($dueDate) {

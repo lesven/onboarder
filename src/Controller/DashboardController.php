@@ -25,7 +25,7 @@ class DashboardController extends AbstractController
 
         // Statistiken sammeln
         $stats = $this->collectDashboardStats($entityManager);
-        
+
         // Überfällige Aufgaben für Dashboard-Widget
         $overdueTasks = $this->getOverdueTasks($entityManager);
 

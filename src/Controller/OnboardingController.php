@@ -26,7 +26,7 @@ class OnboardingController extends AbstractController
     {
         if ($request->isMethod('POST')) {
             $onboarding = $this->createOnboardingFromRequest($request, $entityManager);
-            
+
             // Tasks aus TaskBlocks generieren
             $this->taskService->generateForOnboarding($onboarding);
 

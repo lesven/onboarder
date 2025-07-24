@@ -4,8 +4,8 @@ namespace App\Service;
 
 use App\Entity\Onboarding;
 use App\Entity\OnboardingTask;
-use App\Entity\TaskBlock;
 use App\Entity\Task;
+use App\Entity\TaskBlock;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
@@ -23,7 +23,7 @@ class TaskGenerationService
     public function generateForOnboarding(Onboarding $onboarding): void
     {
         $taskBlocks = $this->collectTaskBlocks($onboarding);
-        
+
         foreach ($taskBlocks as $block) {
             foreach ($block->getTasks() as $templateTask) {
                 $task = $this->createTaskFromTemplate($templateTask, $onboarding, $block);
@@ -97,6 +97,7 @@ class TaskGenerationService
     {
         if ($templateTask->getDueDate()) {
             $task->setDueDate($templateTask->getDueDate());
+
             return;
         }
 
