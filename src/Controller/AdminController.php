@@ -138,4 +138,37 @@ class AdminController extends AbstractController
             'baseTypes' => $baseTypes,
         ]);
     }
+
+    #[Route('/admin/task-blocks/new', name: 'app_admin_new_task_block', methods: ['GET', 'POST'])]
+    public function newTaskBlock(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        if ($request->isMethod('POST')) {
+            $taskBlock = new TaskBlock();
+            $taskBlock->setName($request->request->get('name'));
+            $taskBlock->setDescription($request->request->get('description'));
+            $taskBlock->setSortOrder((int)$request->request->get('sortOrder') ?: 0);
+            
+            // BaseType optional zuordnen
+            $baseTypeId = $request->request->get('baseType');
+            if ($baseTypeId) {
+                $baseType = $entityManager->getRepository(BaseType::class)->find($baseTypeId);
+                if ($baseType) {
+                    $taskBlock->setBaseType($baseType);
+                }
+            }
+            
+            $entityManager->persist($taskBlock);
+            $entityManager->flush();
+            
+            $this->addFlash('success', 'TaskBlock wurde erfolgreich erstellt.');
+            return $this->redirectToRoute('app_admin_task_blocks');
+        }
+        
+        // BaseTypes für das Dropdown laden
+        $baseTypes = $entityManager->getRepository(BaseType::class)->findAll();
+        
+        return $this->render('admin/task_block_form.html.twig', [
+            'baseTypes' => $baseTypes
+        ]);
+    }
 }

@@ -1,0 +1,60 @@
+{% extends 'base_clean.html.twig' %}
+
+{% block title %}TaskBlock erstellen{% endblock %}
+
+{% block body %}
+<div class="container">
+    <h1>Neuen TaskBlock erstellen</h1>
+    
+    <form method="post" action="{{ path('app_admin_new_task_block') }}">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">TaskBlock-Informationen</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Name *</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Beschreibung</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="sortOrder" class="form-label">Reihenfolge</label>
+                            <input type="number" class="form-control" id="sortOrder" name="sortOrder" value="0" min="0">
+                            <div class="form-text">Niedrigere Zahlen werden zuerst angezeigt.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="baseType" class="form-label">BaseType</label>
+                            <select class="form-select" id="baseType" name="baseType">
+                                <option value="">-- Kein BaseType --</option>
+                                {% for baseType in baseTypes %}
+                                    <option value="{{ baseType.id }}">{{ baseType.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">Optional: TaskBlock einem BaseType zuordnen für automatische Vererbung.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-3">
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-lg"></i> TaskBlock erstellen
+                </button>
+                <a href="{{ path('app_admin_task_blocks') }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Zurück
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
