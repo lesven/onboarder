@@ -1,45 +1,42 @@
 #!/bin/bash
 
-# Dieses Skript erstellt die Kern-Entitäten und die Grundstruktur des Onboarding-Systems
+# Dieses Skript führt die Initial-Setup-Schritte für das Onboarding-System aus
 # Ausführung: docker-compose exec app /var/www/html/docker/setup-entities.sh
 
-echo "=== Erstelle Onboarding-System Entitäten ==="
+echo "=== Onboarding-System Setup ==="
 
-# Entitäten erstellen
-echo "Erstelle BaseType Entität..."
-php bin/console make:entity BaseType --no-interaction
+# Prüfe ob bin/console existiert
+if [ ! -f "bin/console" ]; then
+    echo "FEHLER: bin/console nicht gefunden. Stelle sicher, dass Composer install ausgeführt wurde."
+    exit 1
+fi
 
-echo "Erstelle OnboardingType Entität..."
-php bin/console make:entity OnboardingType --no-interaction
-
-echo "Erstelle TaskBlock Entität..."
-php bin/console make:entity TaskBlock --no-interaction
-
-echo "Erstelle Task Entität..."
-php bin/console make:entity Task --no-interaction
-
-echo "Erstelle Role Entität..."
-php bin/console make:entity Role --no-interaction
-
-echo "Erstelle Onboarding Entität..."
-php bin/console make:entity Onboarding --no-interaction
-
-echo "Erstelle User Entität für Authentifizierung..."
-php bin/console make:entity User --no-interaction
-
-echo "=== Erstelle Controller ==="
-php bin/console make:controller OnboardingController --no-interaction
-php bin/console make:controller AdminController --no-interaction
-php bin/console make:controller DashboardController --no-interaction
-
-echo "=== Erstelle Sicherheitssystem ==="
-php bin/console make:user User --no-interaction
-
-echo "=== Erstelle Migration ==="
-php bin/console make:migration --no-interaction
-
-echo "=== Führe Migration aus ==="
+echo "1. Führe ausstehende Migrationen aus..."
 php bin/console doctrine:migrations:migrate --no-interaction
 
+echo "2. Cache leeren..."
+php bin/console cache:clear
+
+echo "3. Prüfe Datenbank-Schema..."
+php bin/console doctrine:schema:validate
+
+echo "4. Lade Fixtures (Demo-Daten)..."
+if php bin/console doctrine:fixtures:load --no-interaction 2>/dev/null; then
+    echo "   ✓ Demo-Daten wurden geladen"
+else
+    echo "   ⚠ Keine Fixtures gefunden oder Fehler beim Laden"
+fi
+
+echo "5. Erstelle Admin-Benutzer (falls noch nicht vorhanden)..."
+# Hier könnte ein Admin-User erstellt werden
+echo "   ℹ Admin-User Setup noch nicht implementiert"
+
+echo ""
 echo "=== Setup abgeschlossen! ==="
-echo "Sie können jetzt die Entitäten in src/Entity/ anpassen und weitere Migrationen erstellen."
+echo "Das Onboarding-System ist bereit zur Nutzung."
+echo ""
+echo "Nächste Schritte:"
+echo "- Öffne http://localhost:8000 im Browser"
+echo "- Erstelle BaseTypes und OnboardingTypes im Admin-Bereich"
+echo "- Füge Rollen und TaskBlocks hinzu"
+echo ""

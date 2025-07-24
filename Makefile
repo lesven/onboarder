@@ -30,7 +30,14 @@ cache: ## Leert den Symfony Cache
 	$(DOCKER_COMPOSE) exec app php bin/console cache:clear
 
 setup: ## Führt das Setup-Skript aus (nach erstem Start)
+	$(DOCKER_COMPOSE) exec app chmod +x /var/www/html/docker/setup-entities.sh
 	$(DOCKER_COMPOSE) exec app /var/www/html/docker/setup-entities.sh
+
+setup-direct: ## Führt Setup-Befehle direkt aus (Fallback wenn setup-script nicht funktioniert)
+	$(DOCKER_COMPOSE) exec app php bin/console doctrine:migrations:migrate --no-interaction
+	$(DOCKER_COMPOSE) exec app php bin/console cache:clear
+	$(DOCKER_COMPOSE) exec app php bin/console doctrine:schema:validate
+	@echo "Setup-Befehle direkt ausgeführt!"
 
 shell: ## Öffnet Shell im App-Container
 	$(DOCKER_COMPOSE) exec app sh
