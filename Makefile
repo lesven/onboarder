@@ -1,4 +1,4 @@
-.PHONY: help start stop setup shell console logs clean migration migrate
+.PHONY: help start stop install setup shell console logs clean migration migrate
 
 help: ## Zeigt verfügbare Befehle
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
@@ -8,6 +8,11 @@ start: ## Startet Docker Container
 
 stop: ## Stoppt Docker Container
 	docker-compose down
+
+install: ## Baut Container, installiert Abhängigkeiten und führt Setup aus
+	docker-compose up -d --build
+	docker-compose exec app composer install --no-interaction
+	docker-compose exec app /var/www/html/setup.sh
 
 setup: ## Führt das Setup-Skript aus (nach erstem Start)
 	docker-compose exec app /var/www/html/docker/setup-entities.sh
