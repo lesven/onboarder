@@ -103,7 +103,8 @@
                             <table class="table table-hover">
                                 <thead class="table-light">
                                     <tr>
-                                        <th style="width: 40%;">Aufgabe</th>
+                                        <th style="width: 5%;">Status</th>
+                                        <th style="width: 35%;">Aufgabe</th>
                                         <th style="width: 15%;">Status</th>
                                         <th style="width: 20%;">Fälligkeitsdatum</th>
                                         <th style="width: 25%;">Zugewiesen an</th>
@@ -111,11 +112,22 @@
                                 </thead>
                                 <tbody>
                                     {% for task in blockTasks %}
-                                        <tr>
+                                        <tr class="{% if task.status == 'completed' %}table-success{% endif %}">
+                                            <td class="text-center">
+                                                <form method="post" action="{{ path('app_task_toggle_complete', {id: task.id}) }}" style="display: inline;">
+                                                    <div class="form-check">
+                                                        <input type="checkbox" 
+                                                               class="form-check-input" 
+                                                               {% if task.status == 'completed' %}checked{% endif %}
+                                                               onchange="this.form.submit()"
+                                                               title="{% if task.status == 'completed' %}Als ausstehend markieren{% else %}Als erledigt markieren{% endif %}">
+                                                    </div>
+                                                </form>
+                                            </td>
                                             <td>
-                                                <strong>{{ task.title }}</strong>
+                                                <strong class="{% if task.status == 'completed' %}text-decoration-line-through text-muted{% endif %}">{{ task.title }}</strong>
                                                 {% if task.description %}
-                                                    <br><small class="text-muted">{{ task.description|slice(0, 100) }}{% if task.description|length > 100 %}...{% endif %}</small>
+                                                    <br><small class="text-muted {% if task.status == 'completed' %}text-decoration-line-through{% endif %}">{{ task.description|slice(0, 100) }}{% if task.description|length > 100 %}...{% endif %}</small>
                                                 {% endif %}
                                             </td>
                                             <td>

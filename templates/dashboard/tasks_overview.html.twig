@@ -25,29 +25,36 @@
             
             <div class="collapse" id="filterCollapse">
                 <div class="card-body border-bottom">
-                    <div class="row">
-                        <div class="col-md-3">
-                            <label class="form-label">Status</label>
-                            <select class="form-select form-select-sm">
-                                <option>Alle</option>
-                                <option>Offen</option>
-                                <option>Abgeschlossen</option>
-                                <option>Überfällig</option>
-                            </select>
+                    <form method="get" action="{{ path('app_tasks_overview') }}">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <label class="form-label">Status</label>
+                                <select name="status" class="form-select form-select-sm">
+                                    <option value="">Nur offene Tasks</option>
+                                    <option value="all" {% if app.request.get('status') == 'all' %}selected{% endif %}>Alle Tasks</option>
+                                    <option value="completed" {% if app.request.get('status') == 'completed' %}selected{% endif %}>Nur abgeschlossene</option>
+                                    <option value="overdue" {% if app.request.get('status') == 'overdue' %}selected{% endif %}>Nur überfällige</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Zuständigkeit</label>
+                                <select name="assignee" class="form-select form-select-sm">
+                                    <option value="">Alle</option>
+                                    <option value="it" {% if app.request.get('assignee') == 'it' %}selected{% endif %}>IT</option>
+                                    <option value="hr" {% if app.request.get('assignee') == 'hr' %}selected{% endif %}>HR</option>
+                                    <option value="manager" {% if app.request.get('assignee') == 'manager' %}selected{% endif %}>Vorgesetzter</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Mitarbeiter</label>
+                                <input type="text" name="employee" class="form-control form-control-sm" 
+                                       placeholder="Name eingeben..." value="{{ app.request.get('employee', '') }}">
+                            </div>
+                            
                         </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Zuständigkeit</label>
-                            <select class="form-select form-select-sm">
-                                <option>Alle</option>
-                                <option>IT</option>
-                                <option>HR</option>
-                                <option>Vorgesetzter</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Mitarbeiter</label>
-                            <input type="text" class="form-control form-control-sm" placeholder="Name eingeben...">
-                        </div>
+                    </form>
+                </div>
+            </div>
                         <div class="col-md-3">
                             <label class="form-label">&nbsp;</label>
                             <div>
@@ -76,7 +83,7 @@
                             </thead>
                             <tbody>
                                 {% for task in tasks %}
-                                <tr class="{% if task.calculatedDueDate and task.calculatedDueDate < date() and not task.isCompleted %}table-danger{% endif %}">
+                                <tr class="{% if task.dueDate and task.dueDate < date() and task.status != 'completed' %}table-danger{% endif %}">
                                     <td>
                                         <strong>{{ task.title }}</strong>
                                         {% if task.description %}
@@ -107,9 +114,9 @@
                                         {% endif %}
                                     </td>
                                     <td>
-                                        {% if task.calculatedDueDate %}
-                                            {{ task.calculatedDueDate|date('d.m.Y') }}
-                                            {% if task.calculatedDueDate < date() and not task.isCompleted %}
+                                        {% if task.dueDate %}
+                                            {{ task.dueDate|date('d.m.Y') }}
+                                            {% if task.dueDate < date() and task.status != 'completed' %}
                                                 <br><small class="text-danger"><i class="bi bi-exclamation-triangle"></i> Überfällig</small>
                                             {% endif %}
                                         {% else %}
@@ -117,27 +124,29 @@
                                         {% endif %}
                                     </td>
                                     <td>
-                                        {% if task.isCompleted %}
+                                        {% if task.status == 'completed' %}
                                             <span class="badge bg-success"><i class="bi bi-check-circle"></i> Abgeschlossen</span>
                                             {% if task.completedAt %}
                                                 <br><small class="text-muted">{{ task.completedAt|date('d.m.Y H:i') }}</small>
                                             {% endif %}
-                                        {% elseif not task.areDependenciesSatisfied %}
+                                        {% elseif task.dependencies|length > 0 %}
                                             <span class="badge bg-warning"><i class="bi bi-clock"></i> Wartet auf Abhängigkeiten</span>
                                         {% else %}
                                             <span class="badge bg-primary"><i class="bi bi-circle"></i> Offen</span>
                                         {% endif %}
                                     </td>
                                     <td>
-                                        {% if not task.isCompleted %}
-                                            <button class="btn btn-sm btn-success" title="Als erledigt markieren">
-                                                <i class="bi bi-check"></i>
-                                            </button>
+                                        {% if task.status != 'completed' %}
+                                            <form method="post" action="{{ path('app_task_toggle_complete', {id: task.id}) }}" style="display: inline;">
+                                                <button type="submit" class="btn btn-sm btn-success" title="Als erledigt markieren">
+                                                    <i class="bi bi-check"></i>
+                                                </button>
+                                            </form>
                                         {% endif %}
-                                        <button class="btn btn-sm btn-outline-primary" title="Details anzeigen">
+                                        <a href="{{ path('app_onboarding_detail', {id: task.onboarding.id}) }}" class="btn btn-sm btn-outline-primary" title="Zum Onboarding">
                                             <i class="bi bi-eye"></i>
-                                        </button>
-                                        {% if task.finalAssignedEmail %}
+                                        </a>
+                                        {% if task.assignedEmail %}
                                             <button class="btn btn-sm btn-outline-info" title="E-Mail senden">
                                                 <i class="bi bi-envelope"></i>
                                             </button>

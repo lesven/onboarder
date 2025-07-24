@@ -33,29 +33,31 @@ class DashboardController extends AbstractController
         $activeOnboardings = $entityManager->getRepository(Onboarding::class)
             ->createQueryBuilder('o')
             ->select('COUNT(DISTINCT o.id)')
-            ->leftJoin('o.tasks', 't')
-            ->where('t.status != :status OR t.status IS NULL')
-            ->setParameter('status', Task::STATUS_COMPLETED)
+            ->leftJoin('o.onboardingTasks', 'ot')
+            ->where('ot.status != :status OR ot.status IS NULL')
+            ->setParameter('status', OnboardingTask::STATUS_COMPLETED)
             ->getQuery()
             ->getSingleScalarResult();
 
         // Offene Aufgaben zählen
-        $openTasks = $entityManager->getRepository(Task::class)
-            ->createQueryBuilder('t')
-            ->select('COUNT(t.id)')
-            ->where('t.status != :status')
-            ->setParameter('status', Task::STATUS_COMPLETED)
+        $openTasks = $entityManager->getRepository(OnboardingTask::class)
+            ->createQueryBuilder('ot')
+            ->select('COUNT(ot.id)')
+            ->where('ot.status != :status')
+            ->setParameter('status', OnboardingTask::STATUS_COMPLETED)
             ->getQuery()
             ->getSingleScalarResult();
 
         // Überfällige Aufgaben
-        $overdueTasks = $entityManager->getRepository(Task::class)
-            ->createQueryBuilder('t')
-            ->where('t.dueDate < :today')
-            ->andWhere('t.status != :status')
+        $overdueTasks = $entityManager->getRepository(OnboardingTask::class)
+            ->createQueryBuilder('ot')
+            ->leftJoin('ot.onboarding', 'o')
+            ->addSelect('o')
+            ->where('ot.dueDate < :today')
+            ->andWhere('ot.status != :status')
             ->setParameter('today', new \DateTimeImmutable())
-            ->setParameter('status', Task::STATUS_COMPLETED)
-            ->orderBy('t.dueDate', 'ASC')
+            ->setParameter('status', OnboardingTask::STATUS_COMPLETED)
+            ->orderBy('ot.dueDate', 'ASC')
             ->setMaxResults(5)
             ->getQuery()
             ->getResult();
@@ -169,7 +171,7 @@ class DashboardController extends AbstractController
     }
 
     #[Route('/onboarding/task/{id}/toggle-complete', name: 'app_task_toggle_complete', methods: ['POST'])]
-    public function toggleTaskComplete(OnboardingTask $task, EntityManagerInterface $entityManager): Response
+    public function toggleTaskComplete(OnboardingTask $task, EntityManagerInterface $entityManager, Request $request): Response
     {
         // Status umschalten
         if ($task->getStatus() === OnboardingTask::STATUS_COMPLETED) {
@@ -186,23 +188,59 @@ class DashboardController extends AbstractController
         $entityManager->flush();
 
         $this->addFlash($type, $message);
+        
+        // Zurück zur ursprünglichen Seite oder Onboarding-Detail als Fallback
+        $referer = $request->headers->get('referer');
+        if ($referer && str_contains($referer, '/tasks')) {
+            return $this->redirectToRoute('app_tasks_overview');
+        }
+        
         return $this->redirectToRoute('app_onboarding_detail', ['id' => $task->getOnboarding()->getId()]);
     }
 
     #[Route('/tasks', name: 'app_tasks_overview')]
-    public function tasksOverview(EntityManagerInterface $entityManager): Response
+    public function tasksOverview(EntityManagerInterface $entityManager, Request $request): Response
     {
-        // Alle OnboardingTasks mit Filter-Optionen laden
-        $tasks = $entityManager->getRepository(OnboardingTask::class)
+        $qb = $entityManager->getRepository(OnboardingTask::class)
             ->createQueryBuilder('ot')
             ->leftJoin('ot.onboarding', 'o')
             ->leftJoin('ot.taskBlock', 'tb')
             ->leftJoin('ot.assignedRole', 'r')
-            ->addSelect('o', 'tb', 'r')
-            ->orderBy('ot.dueDate', 'ASC')
-            ->addOrderBy('ot.sortOrder', 'ASC')
-            ->getQuery()
-            ->getResult();
+            ->addSelect('o', 'tb', 'r');
+
+        // Status-Filter
+        $statusFilter = $request->query->get('status', '');
+        if ($statusFilter === 'completed') {
+            $qb->where('ot.status = :completed')
+               ->setParameter('completed', OnboardingTask::STATUS_COMPLETED);
+        } elseif ($statusFilter === 'overdue') {
+            $qb->where('ot.status != :completed AND ot.dueDate < :now')
+               ->setParameter('completed', OnboardingTask::STATUS_COMPLETED)
+               ->setParameter('now', new \DateTimeImmutable());
+        } elseif ($statusFilter !== 'all') {
+            // Standard: nur offene Tasks
+            $qb->where('ot.status != :completed')
+               ->setParameter('completed', OnboardingTask::STATUS_COMPLETED);
+        }
+
+        // Mitarbeiter-Filter
+        $employeeFilter = $request->query->get('employee', '');
+        if ($employeeFilter) {
+            $qb->andWhere('o.firstName LIKE :employee OR o.lastName LIKE :employee')
+               ->setParameter('employee', '%' . $employeeFilter . '%');
+        }
+
+        // Zuständigkeits-Filter (vereinfacht)
+        $assigneeFilter = $request->query->get('assignee', '');
+        if ($assigneeFilter) {
+            $qb->andWhere('r.name LIKE :assignee OR ot.assignedEmail LIKE :assignee')
+               ->setParameter('assignee', '%' . $assigneeFilter . '%');
+        }
+
+        $tasks = $qb->orderBy('ot.dueDate', 'ASC')
+                    ->addOrderBy('ot.sortOrder', 'ASC')
+                    ->getQuery()
+                    ->getResult();
 
         return $this->render('dashboard/tasks_overview.html.twig', [
             'tasks' => $tasks,
