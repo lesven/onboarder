@@ -73,6 +73,19 @@ class TaskService
         return $task;
     }
 
+    /**
+     * Populates the given Task entity with data from the provided Request object.
+     *
+     * This method extracts data from the request and sets the corresponding fields
+     * on the Task entity. It handles conditional logic for due dates, assignments,
+     * and email templates. If certain fields are missing or invalid, default values
+     * are applied.
+     *
+     * @param Task $task The Task entity to populate.
+     * @param Request $request The HTTP request containing the task data.
+     * 
+     * @return void
+     */
     private function populateTask(Task $task, Request $request): void
     {
         $task->setTitle($request->request->get('title'));
