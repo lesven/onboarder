@@ -223,7 +223,8 @@ class OnboardingTaskService
                 $task->setDueDaysFromEntry($int);
                 $entryDate = $onboarding->getEntryDate();
                 if ($entryDate) {
-                    $task->setDueDate($entryDate->modify(sprintf('%+d days', $int)));
+                    $modifiedEntryDate = $entryDate->modify(sprintf('%+d days', $int));
+                    $task->setDueDate($modifiedEntryDate);
                 } else {
                     $task->setDueDate(null);
                 }
