@@ -89,6 +89,43 @@ class AdminController extends AbstractController
         return $this->render('admin/base_type_form.html.twig');
     }
 
+    #[Route('/base-type/{id}', name: 'app_admin_base_type_show')]
+    public function showBaseType(BaseType $baseType): Response
+    {
+        return $this->render('admin/base_type_show.html.twig', [
+            'baseType' => $baseType,
+        ]);
+    }
+
+    #[Route('/base-type/{id}/edit', name: 'app_admin_base_type_edit')]
+    public function editBaseType(Request $request, BaseType $baseType, EntityManagerInterface $entityManager): Response
+    {
+        if ($request->isMethod('POST')) {
+            $baseType->setName($request->request->get('name'));
+            $baseType->setDescription($request->request->get('description'));
+            $baseType->setUpdatedAt(new \DateTimeImmutable());
+
+            $entityManager->flush();
+
+            $this->addFlash('success', 'BaseType wurde erfolgreich aktualisiert!');
+            return $this->redirectToRoute('app_admin_base_types');
+        }
+
+        return $this->render('admin/base_type_form.html.twig', [
+            'baseType' => $baseType,
+        ]);
+    }
+
+    #[Route('/base-type/{id}/delete', name: 'app_admin_base_type_delete')]
+    public function deleteBaseType(BaseType $baseType, EntityManagerInterface $entityManager): Response
+    {
+        $entityManager->remove($baseType);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'BaseType wurde erfolgreich gel\u00f6scht!');
+        return $this->redirectToRoute('app_admin_base_types');
+    }
+
     #[Route('/role/new', name: 'app_admin_role_new')]
     public function newRole(Request $request, EntityManagerInterface $entityManager): Response
     {

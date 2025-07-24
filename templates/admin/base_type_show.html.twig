@@ -1,0 +1,77 @@
+{% extends 'base_clean.html.twig' %}
+
+{% block title %}BaseType {{ baseType.name }} - Administration - {{ parent() }}{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1><i class="bi bi-diagram-3 me-2"></i>{{ baseType.name }}</h1>
+        <p class="text-muted mb-0">Details des BaseTypes</p>
+    </div>
+    <a href="{{ path('app_admin_base_types') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Zurück zur Übersicht
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <dl class="row mb-4">
+            <dt class="col-sm-3">ID</dt>
+            <dd class="col-sm-9">{{ baseType.id }}</dd>
+            <dt class="col-sm-3">Beschreibung</dt>
+            <dd class="col-sm-9">{{ baseType.description ?? '-' }}</dd>
+            <dt class="col-sm-3">Erstellt</dt>
+            <dd class="col-sm-9">{{ baseType.createdAt|date('d.m.Y H:i') }}</dd>
+        </dl>
+
+        <h5>Zugeordnete Task Blocks</h5>
+        {% if baseType.taskBlocks|length > 0 %}
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Beschreibung</th>
+                        <th>Tasks</th>
+                        <th>Reihenfolge</th>
+                        <th>Aktionen</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for taskBlock in baseType.taskBlocks|sort((a, b) => a.sortOrder <=> b.sortOrder) %}
+                        <tr>
+                            <td><strong>{{ taskBlock.name }}</strong></td>
+                            <td>{{ taskBlock.description|slice(0,50) }}{% if taskBlock.description|length > 50 %}...{% endif %}</td>
+                            <td>
+                                {% if taskBlock.tasks|length > 0 %}
+                                    <span class="badge bg-success">{{ taskBlock.tasks|length }}</span>
+                                {% else %}
+                                    <span class="text-muted">0</span>
+                                {% endif %}
+                            </td>
+                            <td><span class="badge bg-secondary">{{ taskBlock.sortOrder }}</span></td>
+                            <td>
+                                <a href="{{ path('app_admin_task_block_show', {'id': taskBlock.id}) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted">Diesem BaseType sind noch keine Task Blocks zugeordnet.</p>
+        {% endif %}
+
+        <div class="d-flex justify-content-end">
+            <a href="{{ path('app_admin_base_type_edit', {'id': baseType.id}) }}" class="btn btn-warning me-2">
+                <i class="bi bi-pencil"></i> Bearbeiten
+            </a>
+            <a href="{{ path('app_admin_base_type_delete', {'id': baseType.id}) }}" class="btn btn-danger" onclick="return confirm('Wirklich löschen?');">
+                <i class="bi bi-trash"></i> Löschen
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
