@@ -43,7 +43,7 @@ class OnboardingController extends AbstractController
         ]);
     }
 
-    #[Route('s', name: 'app_onboardings')]
+    #[Route('/list', name: 'app_onboardings')]
     public function index(EntityManagerInterface $entityManager): Response
     {
         // Alle Onboardings laden
