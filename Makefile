@@ -41,6 +41,19 @@ migration: ## Erstellt neue Migration
 migrate: ## Führt Migrationen aus
 	docker-compose exec app php bin/console doctrine:migrations:migrate --no-interaction
 
+check: ## Führt Code-Quality-Checks aus
+	docker-compose exec app php-cs-fixer fix --dry-run --diff
+	docker-compose exec app php bin/console lint:twig templates/
+	docker-compose exec app php bin/console lint:yaml config/
+
+test: ## Führt PHPUnit Tests aus
+	docker-compose exec app php bin/phpunit
+
+ci-install: ## Installation für CI/CD (ohne interaktive Eingaben)
+	docker-compose up -d --build --quiet-pull
+	docker-compose exec -T app composer install --no-interaction --no-dev --optimize-autoloader
+	docker-compose exec -T app php bin/console cache:clear --env=prod --no-interaction
+
 # Beispiel-Befehle:
 # make start          - Container starten
 # make setup          - Entitäten erstellen (nach erstem Start)
