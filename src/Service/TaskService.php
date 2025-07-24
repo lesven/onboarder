@@ -34,13 +34,13 @@ class TaskService
      * Creates a new Task entity, associates it with the given TaskBlock, and populates its properties
      * based on the provided Request object. Persists the Task to the database.
      *
-     * @param TaskBlock $taskBlock The TaskBlock entity to associate with the new Task.
-     * @param Request $request The HTTP request containing data to populate the Task.
-     * 
-     * @return Task The newly created Task entity.
-     * 
-     * @throws \Doctrine\ORM\ORMException If there is an issue with persisting the entity.
-     * @throws \Doctrine\DBAL\Exception If there is a database error during the flush operation.
+     * @param TaskBlock $taskBlock the TaskBlock entity to associate with the new Task
+     * @param Request   $request   the HTTP request containing data to populate the Task
+     *
+     * @return Task the newly created Task entity
+     *
+     * @throws \Doctrine\ORM\ORMException if there is an issue with persisting the entity
+     * @throws \Doctrine\DBAL\Exception   if there is a database error during the flush operation
      */
     public function createTask(TaskBlock $taskBlock, Request $request): Task
     {
@@ -57,13 +57,13 @@ class TaskService
     /**
      * Updates the given Task entity with data from the Request object.
      *
-     * @param Task $task The task entity to update.
-     * @param Request $request The HTTP request containing the update data.
+     * @param Task    $task    the task entity to update
+     * @param Request $request the HTTP request containing the update data
      *
-     * @return Task The updated task entity.
+     * @return Task the updated task entity
      *
-     * @throws \Doctrine\ORM\ORMException If there is an issue persisting the entity.
-     * @throws \Doctrine\ORM\OptimisticLockException If a version check on the entity fails.
+     * @throws \Doctrine\ORM\ORMException            if there is an issue persisting the entity
+     * @throws \Doctrine\ORM\OptimisticLockException if a version check on the entity fails
      */
     public function updateTask(Task $task, Request $request): Task
     {
@@ -81,10 +81,8 @@ class TaskService
      * and email templates. If certain fields are missing or invalid, default values
      * are applied.
      *
-     * @param Task $task The Task entity to populate.
-     * @param Request $request The HTTP request containing the task data.
-     * 
-     * @return void
+     * @param Task    $task    the Task entity to populate
+     * @param Request $request the HTTP request containing the task data
      */
     private function populateTask(Task $task, Request $request): void
     {
@@ -97,7 +95,7 @@ class TaskService
             $dueDate = $request->request->get('dueDate');
             if ($dueDate) {
                 $dateTime = \DateTimeImmutable::createFromFormat('Y-m-d', $dueDate);
-                if ($dateTime === false) {
+                if (false === $dateTime) {
                     // Handle invalid date format (e.g., log an error or set to null)
                     $task->setDueDate(null);
                 } else {
