@@ -101,7 +101,11 @@
                                         {% endif %}
                                     </td>
                                     <td>
-                                        <span class="badge bg-secondary">{{ task.taskBlock.name }}</span>
+                                        {% if task.taskBlock %}
+                                            <span class="badge bg-secondary">{{ task.taskBlock.name }}</span>
+                                        {% else %}
+                                            <span class="badge bg-primary">Spezialaufgabe</span>
+                                        {% endif %}
                                     </td>
                                     <td>
                                         {% if task.assignedRole %}
