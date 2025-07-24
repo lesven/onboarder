@@ -140,6 +140,53 @@ class AdminController extends AbstractController
         ]);
     }
 
+    #[Route('/onboarding-type/{id}', name: 'app_admin_onboarding_type_show')]
+    public function showOnboardingType(OnboardingType $onboardingType): Response
+    {
+        return $this->render('admin/onboarding_type_show.html.twig', [
+            'onboardingType' => $onboardingType,
+        ]);
+    }
+
+    #[Route('/onboarding-type/{id}/edit', name: 'app_admin_onboarding_type_edit')]
+    public function editOnboardingType(Request $request, OnboardingType $onboardingType, EntityManagerInterface $entityManager): Response
+    {
+        if ($request->isMethod('POST')) {
+            $onboardingType->setName($request->request->get('name'));
+            $onboardingType->setDescription($request->request->get('description'));
+
+            $baseTypeId = $request->request->get('baseType');
+            $baseType = null;
+            if ($baseTypeId) {
+                $baseType = $entityManager->getRepository(BaseType::class)->find($baseTypeId);
+            }
+            $onboardingType->setBaseType($baseType);
+            $onboardingType->setUpdatedAt(new \DateTimeImmutable());
+
+            $entityManager->flush();
+
+            $this->addFlash('success', 'OnboardingType wurde erfolgreich aktualisiert!');
+            return $this->redirectToRoute('app_admin_onboarding_types');
+        }
+
+        $baseTypes = $entityManager->getRepository(BaseType::class)->findAll();
+
+        return $this->render('admin/onboarding_type_form.html.twig', [
+            'onboardingType' => $onboardingType,
+            'baseTypes' => $baseTypes,
+        ]);
+    }
+
+    #[Route('/onboarding-type/{id}/delete', name: 'app_admin_onboarding_type_delete')]
+    public function deleteOnboardingType(OnboardingType $onboardingType, EntityManagerInterface $entityManager): Response
+    {
+        $entityManager->remove($onboardingType);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'OnboardingType wurde erfolgreich gelöscht!');
+        return $this->redirectToRoute('app_admin_onboarding_types');
+    }
+
     #[Route('/admin/task-blocks/new', name: 'app_admin_new_task_block', methods: ['GET', 'POST'])]
     public function newTaskBlock(Request $request, EntityManagerInterface $entityManager): Response
     {
