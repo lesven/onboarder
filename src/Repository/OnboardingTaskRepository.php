@@ -17,7 +17,7 @@ class OnboardingTaskRepository extends ServiceEntityRepository
     }
 
     /**
-     * Findet alle überfälligen Tasks
+     * Findet alle überfälligen Tasks.
      */
     public function findOverdueTasks(): array
     {
@@ -33,7 +33,7 @@ class OnboardingTaskRepository extends ServiceEntityRepository
     }
 
     /**
-     * Findet alle Tasks für ein bestimmtes Onboarding
+     * Findet alle Tasks für ein bestimmtes Onboarding.
      */
     public function findByOnboarding(int $onboardingId): array
     {
@@ -50,7 +50,7 @@ class OnboardingTaskRepository extends ServiceEntityRepository
     }
 
     /**
-     * Zählt offene Tasks für ein Onboarding
+     * Zählt offene Tasks für ein Onboarding.
      */
     public function countOpenTasksForOnboarding(int $onboardingId): int
     {

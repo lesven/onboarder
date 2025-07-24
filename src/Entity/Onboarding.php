@@ -85,6 +85,7 @@ class Onboarding
     public function setFirstName(string $firstName): static
     {
         $this->firstName = $firstName;
+
         return $this;
     }
 
@@ -96,12 +97,13 @@ class Onboarding
     public function setLastName(string $lastName): static
     {
         $this->lastName = $lastName;
+
         return $this;
     }
 
     public function getFullName(): string
     {
-        return $this->firstName . ' ' . $this->lastName;
+        return $this->firstName.' '.$this->lastName;
     }
 
     public function getEntryDate(): ?\DateTimeImmutable
@@ -112,6 +114,7 @@ class Onboarding
     public function setEntryDate(\DateTimeImmutable $entryDate): static
     {
         $this->entryDate = $entryDate;
+
         return $this;
     }
 
@@ -123,6 +126,7 @@ class Onboarding
     public function setPosition(?string $position): static
     {
         $this->position = $position;
+
         return $this;
     }
 
@@ -134,6 +138,7 @@ class Onboarding
     public function setTeam(?string $team): static
     {
         $this->team = $team;
+
         return $this;
     }
 
@@ -145,6 +150,7 @@ class Onboarding
     public function setManager(?string $manager): static
     {
         $this->manager = $manager;
+
         return $this;
     }
 
@@ -156,6 +162,7 @@ class Onboarding
     public function setBuddy(?string $buddy): static
     {
         $this->buddy = $buddy;
+
         return $this;
     }
 
@@ -167,6 +174,7 @@ class Onboarding
     public function setManagerEmail(?string $managerEmail): static
     {
         $this->managerEmail = $managerEmail;
+
         return $this;
     }
 
@@ -178,6 +186,7 @@ class Onboarding
     public function setBuddyEmail(?string $buddyEmail): static
     {
         $this->buddyEmail = $buddyEmail;
+
         return $this;
     }
 
@@ -189,6 +198,7 @@ class Onboarding
     public function setOnboardingType(?OnboardingType $onboardingType): static
     {
         $this->onboardingType = $onboardingType;
+
         return $this;
     }
 
@@ -200,6 +210,7 @@ class Onboarding
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
@@ -211,6 +222,7 @@ class Onboarding
     public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 

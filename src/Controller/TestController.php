@@ -17,10 +17,10 @@ class TestController extends AbstractController
             // Teste das Repository direkt
             $repository = $entityManager->getRepository(Onboarding::class);
             $count = $repository->count([]);
-            
-            return new Response("Repository funktioniert! Anzahl Onboardings: " . $count);
+
+            return new Response('Repository funktioniert! Anzahl Onboardings: '.$count);
         } catch (\Exception $e) {
-            return new Response("Fehler: " . $e->getMessage());
+            return new Response('Fehler: '.$e->getMessage());
         }
     }
 }

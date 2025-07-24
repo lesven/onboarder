@@ -5,7 +5,6 @@ namespace App\Entity;
 use App\Repository\TaskRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: TaskRepository::class)]
@@ -136,6 +135,7 @@ class Task
     public function setTitle(string $title): static
     {
         $this->title = $title;
+
         return $this;
     }
 
@@ -147,6 +147,7 @@ class Task
     public function setDescription(?string $description): static
     {
         $this->description = $description;
+
         return $this;
     }
 
@@ -158,6 +159,7 @@ class Task
     public function setSortOrder(int $sortOrder): static
     {
         $this->sortOrder = $sortOrder;
+
         return $this;
     }
 
@@ -169,18 +171,20 @@ class Task
     public function setStatus(string $status): static
     {
         $this->status = $status;
+
         return $this;
     }
 
     public function isCompleted(): bool
     {
-        return $this->status === self::STATUS_COMPLETED;
+        return self::STATUS_COMPLETED === $this->status;
     }
 
     public function markAsCompleted(): static
     {
         $this->status = self::STATUS_COMPLETED;
         $this->completedAt = new \DateTimeImmutable();
+
         return $this;
     }
 
@@ -192,6 +196,7 @@ class Task
     public function setDueDate(?\DateTimeImmutable $dueDate): static
     {
         $this->dueDate = $dueDate;
+
         return $this;
     }
 
@@ -203,11 +208,12 @@ class Task
     public function setDueDaysFromEntry(?int $dueDaysFromEntry): static
     {
         $this->dueDaysFromEntry = $dueDaysFromEntry;
+
         return $this;
     }
 
     /**
-     * Berechnet das finale Fälligkeitsdatum basierend auf Eintrittsdatum oder festem Datum
+     * Berechnet das finale Fälligkeitsdatum basierend auf Eintrittsdatum oder festem Datum.
      */
     public function getCalculatedDueDate(): ?\DateTimeImmutable
     {
@@ -215,8 +221,8 @@ class Task
             return $this->dueDate;
         }
 
-        if ($this->dueDaysFromEntry !== null && $this->onboarding && $this->onboarding->getEntryDate()) {
-            return $this->onboarding->getEntryDate()->modify('+' . $this->dueDaysFromEntry . ' days');
+        if (null !== $this->dueDaysFromEntry && $this->onboarding && $this->onboarding->getEntryDate()) {
+            return $this->onboarding->getEntryDate()->modify('+'.$this->dueDaysFromEntry.' days');
         }
 
         return null;
@@ -230,6 +236,7 @@ class Task
     public function setEmailTrigger(string $emailTrigger): static
     {
         $this->emailTrigger = $emailTrigger;
+
         return $this;
     }
 
@@ -241,6 +248,7 @@ class Task
     public function setEmailSendDate(?\DateTimeImmutable $emailSendDate): static
     {
         $this->emailSendDate = $emailSendDate;
+
         return $this;
     }
 
@@ -252,11 +260,12 @@ class Task
     public function setEmailSendDaysFromEntry(?int $emailSendDaysFromEntry): static
     {
         $this->emailSendDaysFromEntry = $emailSendDaysFromEntry;
+
         return $this;
     }
 
     /**
-     * Berechnet das finale E-Mail-Versanddatum
+     * Berechnet das finale E-Mail-Versanddatum.
      */
     public function getCalculatedEmailSendDate(): ?\DateTimeImmutable
     {
@@ -266,14 +275,15 @@ class Task
             case self::EMAIL_TRIGGER_FIXED_DATE:
                 return $this->emailSendDate;
             case self::EMAIL_TRIGGER_RELATIVE_DATE:
-                if ($this->emailSendDaysFromEntry !== null && $this->onboarding && $this->onboarding->getEntryDate()) {
-                    return $this->onboarding->getEntryDate()->modify('+' . $this->emailSendDaysFromEntry . ' days');
+                if (null !== $this->emailSendDaysFromEntry && $this->onboarding && $this->onboarding->getEntryDate()) {
+                    return $this->onboarding->getEntryDate()->modify('+'.$this->emailSendDaysFromEntry.' days');
                 }
                 break;
             case self::EMAIL_TRIGGER_MANUAL:
             default:
                 return null;
         }
+
         return null;
     }
 
@@ -285,11 +295,12 @@ class Task
     public function setAssignedEmail(?string $assignedEmail): static
     {
         $this->assignedEmail = $assignedEmail;
+
         return $this;
     }
 
     /**
-     * Gibt die finale E-Mail-Adresse zurück (direkte Eingabe oder aus Rolle)
+     * Gibt die finale E-Mail-Adresse zurück (direkte Eingabe oder aus Rolle).
      */
     public function getFinalAssignedEmail(): ?string
     {
@@ -308,6 +319,7 @@ class Task
     public function setEmailTemplate(?string $emailTemplate): static
     {
         $this->emailTemplate = $emailTemplate;
+
         return $this;
     }
 
@@ -319,6 +331,7 @@ class Task
     public function setHasReminder(bool $hasReminder): static
     {
         $this->hasReminder = $hasReminder;
+
         return $this;
     }
 
@@ -330,6 +343,7 @@ class Task
     public function setReminderSendDate(?\DateTimeImmutable $reminderSendDate): static
     {
         $this->reminderSendDate = $reminderSendDate;
+
         return $this;
     }
 
@@ -341,6 +355,7 @@ class Task
     public function setReminderSendDaysFromEntry(?int $reminderSendDaysFromEntry): static
     {
         $this->reminderSendDaysFromEntry = $reminderSendDaysFromEntry;
+
         return $this;
     }
 
@@ -352,6 +367,7 @@ class Task
     public function setReminderTemplate(?string $reminderTemplate): static
     {
         $this->reminderTemplate = $reminderTemplate;
+
         return $this;
     }
 
@@ -363,6 +379,7 @@ class Task
     public function setTaskBlock(?TaskBlock $taskBlock): static
     {
         $this->taskBlock = $taskBlock;
+
         return $this;
     }
 
@@ -374,6 +391,7 @@ class Task
     public function setOnboarding(?Onboarding $onboarding): static
     {
         $this->onboarding = $onboarding;
+
         return $this;
     }
 
@@ -385,6 +403,7 @@ class Task
     public function setAssignedRole(?Role $assignedRole): static
     {
         $this->assignedRole = $assignedRole;
+
         return $this;
     }
 
@@ -408,6 +427,7 @@ class Task
     public function removeDependency(self $dependency): static
     {
         $this->dependencies->removeElement($dependency);
+
         return $this;
     }
 
@@ -439,7 +459,7 @@ class Task
     }
 
     /**
-     * Prüft ob alle Abhängigkeiten erfüllt sind
+     * Prüft ob alle Abhängigkeiten erfüllt sind.
      */
     public function areDependenciesSatisfied(): bool
     {
@@ -448,6 +468,7 @@ class Task
                 return false;
             }
         }
+
         return true;
     }
 
@@ -459,6 +480,7 @@ class Task
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
@@ -470,6 +492,7 @@ class Task
     public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
@@ -481,6 +504,7 @@ class Task
     public function setCompletedAt(?\DateTimeImmutable $completedAt): static
     {
         $this->completedAt = $completedAt;
+
         return $this;
     }
 
@@ -492,6 +516,7 @@ class Task
     public function setEmailSentAt(?\DateTimeImmutable $emailSentAt): static
     {
         $this->emailSentAt = $emailSentAt;
+
         return $this;
     }
 
@@ -503,6 +528,7 @@ class Task
     public function setReminderSentAt(?\DateTimeImmutable $reminderSentAt): static
     {
         $this->reminderSentAt = $reminderSentAt;
+
         return $this;
     }
 
