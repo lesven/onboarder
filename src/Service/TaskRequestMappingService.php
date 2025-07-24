@@ -68,8 +68,15 @@ class TaskRequestMappingService
         if ('fixed' === $dueType) {
             $dueDate = $request->request->get('dueDate');
             if ($dueDate) {
-                $task->setDueDate(new \DateTimeImmutable($dueDate));
-                $task->setDueDaysFromEntry(null);
+                try {
+                    $dateTime = new \DateTimeImmutable($dueDate);
+                    $task->setDueDate($dateTime);
+                    $task->setDueDaysFromEntry(null);
+                } catch (\Exception $e) {
+                    // Log the error or handle it gracefully
+                    $task->setDueDate(null);
+                    $task->setDueDaysFromEntry(null);
+                }
             } else {
                 $task->setDueDate(null);
                 $task->setDueDaysFromEntry(null);
