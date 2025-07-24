@@ -6,6 +6,7 @@ use App\Entity\BaseType;
 use App\Entity\Onboarding;
 use App\Entity\OnboardingType;
 use App\Entity\OnboardingTask;
+use App\Entity\Role;
 use App\Entity\Task;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -264,6 +265,66 @@ class DashboardController extends AbstractController
 
         $this->addFlash('success', 'Onboarding für ' . $fullName . ' wurde erfolgreich gelöscht!');
         return $this->redirectToRoute('app_onboardings');
+    }
+
+    #[Route('/onboarding/{id}/add-task', name: 'app_onboarding_add_task')]
+    public function addOnboardingTask(Onboarding $onboarding, Request $request, EntityManagerInterface $entityManager): Response
+    {
+        if ($request->isMethod('POST')) {
+            $task = new OnboardingTask();
+            $task->setOnboarding($onboarding);
+            $task->setTitle($request->request->get('title'));
+            $task->setDescription($request->request->get('description'));
+            $task->setSortOrder((int)$request->request->get('sortOrder') ?: 0);
+
+            $dueDateType = $request->request->get('dueDateType', 'none');
+            if ($dueDateType === 'fixed') {
+                $dueDate = $request->request->get('dueDate');
+                if ($dueDate) {
+                    $task->setDueDate(new \DateTimeImmutable($dueDate));
+                }
+            } elseif ($dueDateType === 'relative') {
+                $days = $request->request->get('dueDaysFromEntry');
+                if ($days !== null && $days !== '') {
+                    $daysInt = (int)$days;
+                    $task->setDueDaysFromEntry($daysInt);
+                    $entryDate = $onboarding->getEntryDate();
+                    if ($entryDate) {
+                        $task->setDueDate($entryDate->modify(sprintf('%+d days', $daysInt)));
+                    }
+                }
+            }
+
+            $roleId = $request->request->get('assignedRole');
+            if ($roleId) {
+                $role = $entityManager->getRepository(Role::class)->find($roleId);
+                if ($role) {
+                    $task->setAssignedRole($role);
+                }
+            }
+            $assignedEmail = $request->request->get('assignedEmail');
+            if ($assignedEmail) {
+                $task->setAssignedEmail($assignedEmail);
+            }
+
+            if ($request->request->get('sendEmail')) {
+                $task->setSendEmail(true);
+                $task->setEmailTemplate($request->request->get('emailTemplate'));
+            }
+
+            $entityManager->persist($task);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Aufgabe hinzugefügt.');
+            return $this->redirectToRoute('app_onboarding_detail', ['id' => $onboarding->getId()]);
+        }
+
+        $roles = $entityManager->getRepository(Role::class)->findAll();
+
+        return $this->render('dashboard/onboarding_task_form.html.twig', [
+            'onboarding' => $onboarding,
+            'roles' => $roles,
+        ]);
     }
 
     /**
