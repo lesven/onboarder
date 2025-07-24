@@ -54,6 +54,17 @@ class TaskService
         return $task;
     }
 
+    /**
+     * Updates the given Task entity with data from the Request object.
+     *
+     * @param Task $task The task entity to update.
+     * @param Request $request The HTTP request containing the update data.
+     *
+     * @return Task The updated task entity.
+     *
+     * @throws \Doctrine\ORM\ORMException If there is an issue persisting the entity.
+     * @throws \Doctrine\ORM\OptimisticLockException If a version check on the entity fails.
+     */
     public function updateTask(Task $task, Request $request): Task
     {
         $this->populateTask($task, $request);
