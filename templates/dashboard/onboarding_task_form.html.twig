@@ -1,10 +1,12 @@
 {% extends 'base_clean.html.twig' %}
 
-{% block title %}Neue Aufgabe - {{ onboarding.fullName }}{% endblock %}
+{% set edit = task is defined %}
+
+{% block title %}{% if edit %}Aufgabe bearbeiten{% else %}Neue Aufgabe{% endif %} - {{ onboarding.fullName }}{% endblock %}
 
 {% block body %}
 <div class="container">
-    <h1>Neue Aufgabe für {{ onboarding.fullName }}</h1>
+    <h1>{% if edit %}Aufgabe bearbeiten{% else %}Neue Aufgabe für {{ onboarding.fullName }}{% endif %}</h1>
     <form method="post">
         <div class="row">
             <div class="col-md-8">
@@ -15,15 +17,15 @@
                     <div class="card-body">
                         <div class="mb-3">
                             <label for="title" class="form-label">Titel *</label>
-                            <input type="text" class="form-control" id="title" name="title" required>
+                            <input type="text" class="form-control" id="title" name="title" value="{{ edit ? task.title : '' }}" required>
                         </div>
                         <div class="mb-3">
                             <label for="description" class="form-label">Beschreibung</label>
-                            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                            <textarea class="form-control" id="description" name="description" rows="3">{{ edit ? task.description : '' }}</textarea>
                         </div>
                         <div class="mb-3">
                             <label for="sortOrder" class="form-label">Reihenfolge</label>
-                            <input type="number" class="form-control" id="sortOrder" name="sortOrder" value="0" min="0">
+                            <input type="number" class="form-control" id="sortOrder" name="sortOrder" value="{{ edit ? task.sortOrder : 0 }}" min="0">
                             <div class="form-text">Niedrigere Zahlen werden zuerst angezeigt.</div>
                         </div>
                     </div>
@@ -37,25 +39,25 @@
                         <div class="mb-3">
                             <label class="form-label">Fälligkeitstyp</label>
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="dueDateType" id="dueDateTypeNone" value="none" checked>
+                                <input class="form-check-input" type="radio" name="dueDateType" id="dueDateTypeNone" value="none" {% if not edit or (not task.dueDate and task.dueDaysFromEntry is null) %}checked{% endif %}>
                                 <label class="form-check-label" for="dueDateTypeNone">Kein Fälligkeitsdatum</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="dueDateType" id="dueDateTypeFixed" value="fixed">
+                                <input class="form-check-input" type="radio" name="dueDateType" id="dueDateTypeFixed" value="fixed" {% if edit and task.dueDate %}checked{% endif %}>
                                 <label class="form-check-label" for="dueDateTypeFixed">Festes Datum</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="dueDateType" id="dueDateTypeRelative" value="relative">
+                                <input class="form-check-input" type="radio" name="dueDateType" id="dueDateTypeRelative" value="relative" {% if edit and task.dueDaysFromEntry is not null %}checked{% endif %}>
                                 <label class="form-check-label" for="dueDateTypeRelative">Relativ zum Eintrittsdatum</label>
                             </div>
                         </div>
                         <div class="mb-3" id="fixedDateGroup" style="display: none;">
                             <label for="dueDate" class="form-label">Fälligkeitsdatum</label>
-                            <input type="date" class="form-control" id="dueDate" name="dueDate">
+                            <input type="date" class="form-control" id="dueDate" name="dueDate" value="{{ edit and task.dueDate ? task.dueDate.format('Y-m-d') : '' }}">
                         </div>
                         <div class="mb-3" id="relativeDateGroup" style="display: none;">
                             <label for="dueDaysFromEntry" class="form-label">Tage vor/nach Eintrittsdatum</label>
-                            <input type="number" class="form-control" id="dueDaysFromEntry" name="dueDaysFromEntry">
+                            <input type="number" class="form-control" id="dueDaysFromEntry" name="dueDaysFromEntry" value="{{ edit and task.dueDaysFromEntry is not null ? task.dueDaysFromEntry : '' }}">
                             <div class="form-text">Negative Werte = vor Eintrittsdatum, positive Werte = nach Eintrittsdatum.</div>
                         </div>
                     </div>
@@ -71,13 +73,13 @@
                             <select class="form-select" id="assignedRole" name="assignedRole">
                                 <option value="">-- Keine Rolle --</option>
                                 {% for role in roles %}
-                                    <option value="{{ role.id }}">{{ role.name }} ({{ role.email }})</option>
+                                    <option value="{{ role.id }}" {% if edit and task.assignedRole and task.assignedRole.id == role.id %}selected{% endif %}>{{ role.name }} ({{ role.email }})</option>
                                 {% endfor %}
                             </select>
                         </div>
                         <div class="mb-3">
                             <label for="assignedEmail" class="form-label">Oder direkte E-Mail-Adresse</label>
-                            <input type="email" class="form-control" id="assignedEmail" name="assignedEmail">
+                            <input type="email" class="form-control" id="assignedEmail" name="assignedEmail" value="{{ edit ? task.assignedEmail : '' }}">
                             <div class="form-text">Falls keine Rolle ausgewählt ist, kann hier eine E-Mail angegeben werden.</div>
                         </div>
                     </div>
@@ -92,13 +94,13 @@
                     <div class="card-body">
                         <div class="mb-3">
                             <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="sendEmail" name="sendEmail">
+                                <input class="form-check-input" type="checkbox" id="sendEmail" name="sendEmail" {% if edit and task.sendEmail %}checked{% endif %}>
                                 <label class="form-check-label" for="sendEmail">E-Mail senden</label>
                             </div>
                         </div>
                         <div class="mb-3" id="emailTemplateGroup" style="display: none;">
                             <label for="emailTemplate" class="form-label">E-Mail-Template</label>
-                            <textarea class="form-control" id="emailTemplate" name="emailTemplate" rows="4" placeholder="HTML-Template für die E-Mail..."></textarea>
+                            <textarea class="form-control" id="emailTemplate" name="emailTemplate" rows="4" placeholder="HTML-Template für die E-Mail...">{{ edit ? task.emailTemplate : '' }}</textarea>
                         </div>
                     </div>
                 </div>
@@ -107,7 +109,7 @@
         <div class="row mt-3">
             <div class="col-12">
                 <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-check-lg"></i> Aufgabe erstellen
+                    <i class="bi bi-check-lg"></i> {% if edit %}Änderungen speichern{% else %}Aufgabe erstellen{% endif %}
                 </button>
                 <a href="{{ path('app_onboarding_detail', {'id': onboarding.id}) }}" class="btn btn-secondary">
                     <i class="bi bi-arrow-left"></i> Zurück
