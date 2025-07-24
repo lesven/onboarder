@@ -108,6 +108,7 @@ class AdminController extends AbstractController
             // Validate name field
             if (empty($name)) {
                 $this->addFlash('error', 'Der Name darf nicht leer sein.');
+
                 return $this->render('admin/base_type_form.html.twig', [
                     'baseType' => $baseType,
                 ]);
@@ -117,6 +118,7 @@ class AdminController extends AbstractController
             $existingBaseType = $entityManager->getRepository(BaseType::class)->findOneBy(['name' => $name]);
             if ($existingBaseType && $existingBaseType->getId() !== $baseType->getId()) {
                 $this->addFlash('error', 'Der Name muss eindeutig sein.');
+
                 return $this->render('admin/base_type_form.html.twig', [
                     'baseType' => $baseType,
                 ]);
@@ -129,6 +131,7 @@ class AdminController extends AbstractController
             $entityManager->flush();
 
             $this->addFlash('success', 'BaseType wurde erfolgreich aktualisiert!');
+
             return $this->redirectToRoute('app_admin_base_types');
         }
 
@@ -144,6 +147,7 @@ class AdminController extends AbstractController
         $entityManager->flush();
 
         $this->addFlash('success', 'BaseType wurde erfolgreich gel\u00f6scht!');
+
         return $this->redirectToRoute('app_admin_base_types');
     }
 

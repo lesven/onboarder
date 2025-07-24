@@ -17,7 +17,7 @@ install: ## Baut Container, installiert Abhängigkeiten und führt Setup aus
 	@echo "Räume Cache manuell auf..."
 	docker compose exec --workdir /var/www/html app rm -rf var/cache/* || true
 	@echo "Installation abgeschlossen!"
-	docker compose exec --workdir /var/www/html app /usr/local/bin/php-cs-fixer fix --dry-run --diff --allow-risky=yes
+	docker compose exec --workdir /var/www/html app /usr/local/bin/php-cs-fixer fix --diff --allow-risky=yes
 	@echo "CS Fixer abgeschlossen!"
 
 setup: ## Führt das Setup-Skript aus (nach erstem Start)
