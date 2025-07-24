@@ -205,6 +205,15 @@ class AdminController extends AbstractController
                 }
             }
             
+            // OnboardingType optional zuordnen
+            $onboardingTypeId = $request->request->get('onboardingType');
+            if ($onboardingTypeId) {
+                $onboardingType = $entityManager->getRepository(OnboardingType::class)->find($onboardingTypeId);
+                if ($onboardingType) {
+                    $taskBlock->setOnboardingType($onboardingType);
+                }
+            }
+            
             $entityManager->persist($taskBlock);
             $entityManager->flush();
             
@@ -212,11 +221,13 @@ class AdminController extends AbstractController
             return $this->redirectToRoute('app_admin_task_blocks');
         }
         
-        // BaseTypes für das Dropdown laden
+        // BaseTypes und OnboardingTypes für das Dropdown laden
         $baseTypes = $entityManager->getRepository(BaseType::class)->findAll();
+        $onboardingTypes = $entityManager->getRepository(OnboardingType::class)->findAll();
         
         return $this->render('admin/task_block_form.html.twig', [
-            'baseTypes' => $baseTypes
+            'baseTypes' => $baseTypes,
+            'onboardingTypes' => $onboardingTypes
         ]);
     }
 
@@ -245,18 +256,29 @@ class AdminController extends AbstractController
                 $taskBlock->setBaseType(null);
             }
             
+            // OnboardingType optional zuordnen
+            $onboardingTypeId = $request->request->get('onboardingType');
+            if ($onboardingTypeId) {
+                $onboardingType = $entityManager->getRepository(OnboardingType::class)->find($onboardingTypeId);
+                $taskBlock->setOnboardingType($onboardingType);
+            } else {
+                $taskBlock->setOnboardingType(null);
+            }
+            
             $entityManager->flush();
             
             $this->addFlash('success', 'TaskBlock wurde erfolgreich aktualisiert.');
             return $this->redirectToRoute('app_admin_task_blocks');
         }
         
-        // BaseTypes für das Dropdown laden
+        // BaseTypes und OnboardingTypes für das Dropdown laden
         $baseTypes = $entityManager->getRepository(BaseType::class)->findAll();
+        $onboardingTypes = $entityManager->getRepository(OnboardingType::class)->findAll();
         
         return $this->render('admin/task_block_edit.html.twig', [
             'taskBlock' => $taskBlock,
-            'baseTypes' => $baseTypes
+            'baseTypes' => $baseTypes,
+            'onboardingTypes' => $onboardingTypes
         ]);
     }
 

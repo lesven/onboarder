@@ -57,6 +57,15 @@
                             {% endif %}
                         </dd>
                         
+                        <dt class="col-sm-3">OnboardingType:</dt>
+                        <dd class="col-sm-9">
+                            {% if taskBlock.onboardingType %}
+                                <span class="badge bg-success">{{ taskBlock.onboardingType.name }}</span>
+                            {% else %}
+                                <span class="text-muted">Kein OnboardingType zugeordnet</span>
+                            {% endif %}
+                        </dd>
+                        
                         <dt class="col-sm-3">Erstellt:</dt>
                         <dd class="col-sm-9">{{ taskBlock.createdAt|date('d.m.Y H:i:s') }}</dd>
                         

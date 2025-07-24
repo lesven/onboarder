@@ -40,6 +40,17 @@
                             </select>
                             <div class="form-text">Optional: TaskBlock einem BaseType zuordnen für automatische Vererbung.</div>
                         </div>
+                        
+                        <div class="mb-3">
+                            <label for="onboardingType" class="form-label">OnboardingType</label>
+                            <select class="form-select" id="onboardingType" name="onboardingType">
+                                <option value="">-- Kein OnboardingType --</option>
+                                {% for onboardingType in onboardingTypes %}
+                                    <option value="{{ onboardingType.id }}">{{ onboardingType.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">Optional: TaskBlock einem spezifischen OnboardingType zuordnen.</div>
+                        </div>
                     </div>
                 </div>
             </div>

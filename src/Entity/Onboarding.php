@@ -58,11 +58,18 @@ class Onboarding
     #[ORM\OneToMany(targetEntity: Task::class, mappedBy: 'onboarding', cascade: ['persist', 'remove'])]
     private Collection $tasks;
 
+    /**
+     * @var Collection<int, OnboardingTask>
+     */
+    #[ORM\OneToMany(targetEntity: OnboardingTask::class, mappedBy: 'onboarding', cascade: ['persist', 'remove'])]
+    private Collection $onboardingTasks;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
         $this->tasks = new ArrayCollection();
+        $this->onboardingTasks = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -231,6 +238,36 @@ class Onboarding
             // Set the owning side to null (unless already changed)
             if ($task->getOnboarding() === $this) {
                 $task->setOnboarding(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, OnboardingTask>
+     */
+    public function getOnboardingTasks(): Collection
+    {
+        return $this->onboardingTasks;
+    }
+
+    public function addOnboardingTask(OnboardingTask $onboardingTask): static
+    {
+        if (!$this->onboardingTasks->contains($onboardingTask)) {
+            $this->onboardingTasks->add($onboardingTask);
+            $onboardingTask->setOnboarding($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOnboardingTask(OnboardingTask $onboardingTask): static
+    {
+        if ($this->onboardingTasks->removeElement($onboardingTask)) {
+            // Set the owning side to null (unless already changed)
+            if ($onboardingTask->getOnboarding() === $this) {
+                $onboardingTask->setOnboarding(null);
             }
         }
 

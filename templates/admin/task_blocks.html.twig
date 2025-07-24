@@ -23,6 +23,7 @@
                             <th>ID</th>
                             <th>Name</th>
                             <th>BaseType</th>
+                            <th>OnboardingType</th>
                             <th>Beschreibung</th>
                             <th>Aufgaben</th>
                             <th>Reihenfolge</th>
@@ -45,6 +46,13 @@
                                     {% endif %}
                                 </td>
                                 <td>
+                                    {% if taskBlock.onboardingType %}
+                                        <span class="badge bg-success">{{ taskBlock.onboardingType.name }}</span>
+                                    {% else %}
+                                        <span class="text-muted">Kein OnboardingType</span>
+                                    {% endif %}
+                                </td>
+                                <td>
                                     <span class="text-muted">{{ taskBlock.description|slice(0, 60) }}{% if taskBlock.description|length > 60 %}...{% endif %}</span>
                                 </td>
                                 <td>
@@ -55,7 +63,7 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <span class="badge bg-light text-dark">{{ taskBlock.orderPosition ?? 0 }}</span>
+                                    <span class="badge bg-light text-dark">{{ taskBlock.sortOrder ?? 0 }}</span>
                                 </td>
                                 <td>
                                     <small class="text-muted">{{ taskBlock.createdAt|date('d.m.Y H:i') }}</small>

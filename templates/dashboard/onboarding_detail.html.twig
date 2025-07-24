@@ -88,72 +88,75 @@
                 <h5 class="mb-0"><i class="bi bi-list-task me-2"></i>Onboarding-Aufgaben</h5>
             </div>
             <div class="card-body">
-                {% if tasks|length > 0 %}
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Aufgabe</th>
-                                    <th>Status</th>
-                                    <th>Fälligkeitsdatum</th>
-                                    <th>Zugewiesen an</th>
-                                    <th>Task Block</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for task in tasks %}
+                {% if tasksByBlock|length > 0 %}
+                    {% for blockName, blockTasks in tasksByBlock %}
+                        <!-- TaskBlock Überschrift -->
+                        <div class="d-flex align-items-center mb-3 {% if not loop.first %}mt-4{% endif %}">
+                            <h5 class="mb-0 me-3">
+                                <i class="bi bi-folder me-2"></i>{{ blockName }}
+                            </h5>
+                            <span class="badge bg-primary">{{ blockTasks|length }} Aufgabe{{ blockTasks|length != 1 ? 'n' : '' }}</span>
+                        </div>
+
+                        <!-- Tasks in diesem Block -->
+                        <div class="table-responsive mb-4">
+                            <table class="table table-hover">
+                                <thead class="table-light">
                                     <tr>
-                                        <td>
-                                            <strong>{{ task.title }}</strong>
-                                            {% if task.description %}
-                                                <br><small class="text-muted">{{ task.description|slice(0, 100) }}{% if task.description|length > 100 %}...{% endif %}</small>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            {% if task.status == 'pending' %}
-                                                <span class="badge bg-warning">Ausstehend</span>
-                                            {% elseif task.status == 'in_progress' %}
-                                                <span class="badge bg-info">In Bearbeitung</span>
-                                            {% elseif task.status == 'completed' %}
-                                                <span class="badge bg-success">Abgeschlossen</span>
-                                            {% else %}
-                                                <span class="badge bg-secondary">{{ task.status|capitalize }}</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            {% if task.dueDate %}
-                                                {% if task.dueDate < date() and task.status != 'completed' %}
-                                                    <span class="text-danger">
-                                                        <i class="bi bi-exclamation-triangle me-1"></i>{{ task.dueDate|date('d.m.Y') }}
-                                                    </span>
-                                                {% else %}
-                                                    {{ task.dueDate|date('d.m.Y') }}
-                                                {% endif %}
-                                            {% else %}
-                                                <span class="text-muted">Kein Datum</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            {% if task.assignedRole %}
-                                                <span class="badge bg-secondary">{{ task.assignedRole.name }}</span>
-                                            {% elseif task.assigneeEmail %}
-                                                {{ task.assigneeEmail }}
-                                            {% else %}
-                                                <span class="text-muted">Nicht zugewiesen</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            {% if task.taskBlock %}
-                                                <span class="badge bg-light text-dark">{{ task.taskBlock.name }}</span>
-                                            {% else %}
-                                                <span class="text-muted">Kein Block</span>
-                                            {% endif %}
-                                        </td>
+                                        <th style="width: 40%;">Aufgabe</th>
+                                        <th style="width: 15%;">Status</th>
+                                        <th style="width: 20%;">Fälligkeitsdatum</th>
+                                        <th style="width: 25%;">Zugewiesen an</th>
                                     </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody>
+                                    {% for task in blockTasks %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ task.title }}</strong>
+                                                {% if task.description %}
+                                                    <br><small class="text-muted">{{ task.description|slice(0, 100) }}{% if task.description|length > 100 %}...{% endif %}</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if task.status == 'pending' %}
+                                                    <span class="badge bg-warning">Ausstehend</span>
+                                                {% elseif task.status == 'in_progress' %}
+                                                    <span class="badge bg-info">In Bearbeitung</span>
+                                                {% elseif task.status == 'completed' %}
+                                                    <span class="badge bg-success">Abgeschlossen</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">{{ task.status|capitalize }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if task.dueDate %}
+                                                    {% if task.dueDate < date() and task.status != 'completed' %}
+                                                        <span class="text-danger">
+                                                            <i class="bi bi-exclamation-triangle me-1"></i>{{ task.dueDate|date('d.m.Y') }}
+                                                        </span>
+                                                    {% else %}
+                                                        {{ task.dueDate|date('d.m.Y') }}
+                                                    {% endif %}
+                                                {% else %}
+                                                    <span class="text-muted">Kein Datum</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if task.assignedRole %}
+                                                    <span class="badge bg-secondary">{{ task.assignedRole.name }}</span>
+                                                {% elseif task.assignedEmail %}
+                                                    {{ task.assignedEmail }}
+                                                {% else %}
+                                                    <span class="text-muted">Nicht zugewiesen</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endfor %}
                 {% else %}
                     <div class="text-center py-5">
                         <i class="bi bi-list-task display-1 text-muted"></i>

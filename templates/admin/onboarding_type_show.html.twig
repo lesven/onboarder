@@ -34,6 +34,47 @@
             <dt class="col-sm-3">Erstellt</dt>
             <dd class="col-sm-9">{{ onboardingType.createdAt|date('d.m.Y H:i') }}</dd>
         </dl>
+        
+        <h5>Zugeordnete TaskBlocks</h5>
+        {% if onboardingType.taskBlocks|length > 0 %}
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Beschreibung</th>
+                            <th>Tasks</th>
+                            <th>Reihenfolge</th>
+                            <th>Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for taskBlock in onboardingType.taskBlocks|sort((a, b) => a.sortOrder <=> b.sortOrder) %}
+                            <tr>
+                                <td><strong>{{ taskBlock.name }}</strong></td>
+                                <td>{{ taskBlock.description|slice(0, 50) }}{% if taskBlock.description|length > 50 %}...{% endif %}</td>
+                                <td>
+                                    {% if taskBlock.tasks|length > 0 %}
+                                        <span class="badge bg-success">{{ taskBlock.tasks|length }}</span>
+                                    {% else %}
+                                        <span class="text-muted">0</span>
+                                    {% endif %}
+                                </td>
+                                <td><span class="badge bg-secondary">{{ taskBlock.sortOrder }}</span></td>
+                                <td>
+                                    <a href="{{ path('app_admin_task_block_tasks', {'id': taskBlock.id}) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-list-task"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted">Diesem OnboardingType sind noch keine TaskBlocks zugeordnet.</p>
+        {% endif %}
+        
         <div class="d-flex justify-content-end">
             <a href="{{ path('app_admin_onboarding_type_edit', {'id': onboardingType.id}) }}" class="btn btn-warning me-2">
                 <i class="bi bi-pencil"></i> Bearbeiten
