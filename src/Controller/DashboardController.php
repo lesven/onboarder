@@ -290,7 +290,8 @@ class DashboardController extends AbstractController
                     $task->setDueDaysFromEntry($daysInt);
                     $entryDate = $onboarding->getEntryDate();
                     if ($entryDate) {
-                        $task->setDueDate($entryDate->modify(sprintf('%+d days', $daysInt)));
+                        $newDueDate = $entryDate->modify(sprintf('%+d days', $daysInt));
+                        $task->setDueDate($newDueDate);
                     }
                 }
             }
