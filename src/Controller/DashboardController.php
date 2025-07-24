@@ -154,7 +154,7 @@ class DashboardController extends AbstractController
         // OnboardingTasks nach TaskBlocks gruppieren
         $tasksByBlock = [];
         foreach ($onboarding->getOnboardingTasks() as $task) {
-            $blockName = $task->getTaskBlock() ? $task->getTaskBlock()->getName() : 'Ohne Block';
+            $blockName = $task->getTaskBlock() ? $task->getTaskBlock()->getName() : 'Sonderaufgaben';
             if (!isset($tasksByBlock[$blockName])) {
                 $tasksByBlock[$blockName] = [];
             }
