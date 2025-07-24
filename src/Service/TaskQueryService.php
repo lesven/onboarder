@@ -70,7 +70,7 @@ class TaskQueryService
     /**
      * Wendet Zuständigkeitsfilter an.
      */
-    private function applyAssigneeFilter($qb, string $assignee): void
+    private function applyAssigneeFilter(QueryBuilder $qb, string $assignee): void
     {
         if ($assignee) {
             $qb->andWhere('r.name LIKE :assignee OR ot.assignedEmail LIKE :assignee')
