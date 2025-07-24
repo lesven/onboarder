@@ -101,8 +101,28 @@ class AdminController extends AbstractController
     public function editBaseType(Request $request, BaseType $baseType, EntityManagerInterface $entityManager): Response
     {
         if ($request->isMethod('POST')) {
-            $baseType->setName($request->request->get('name'));
-            $baseType->setDescription($request->request->get('description'));
+            $name = $request->request->get('name');
+            $description = $request->request->get('description');
+
+            // Validate name field
+            if (empty($name)) {
+                $this->addFlash('error', 'Der Name darf nicht leer sein.');
+                return $this->render('admin/base_type_form.html.twig', [
+                    'baseType' => $baseType,
+                ]);
+            }
+
+            // Check for uniqueness
+            $existingBaseType = $entityManager->getRepository(BaseType::class)->findOneBy(['name' => $name]);
+            if ($existingBaseType && $existingBaseType->getId() !== $baseType->getId()) {
+                $this->addFlash('error', 'Der Name muss eindeutig sein.');
+                return $this->render('admin/base_type_form.html.twig', [
+                    'baseType' => $baseType,
+                ]);
+            }
+
+            $baseType->setName($name);
+            $baseType->setDescription($description);
             $baseType->setUpdatedAt(new \DateTimeImmutable());
 
             $entityManager->flush();
