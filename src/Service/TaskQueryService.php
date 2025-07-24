@@ -41,7 +41,7 @@ class TaskQueryService
     /**
      * Wendet Statusfilter an.
      */
-    private function applyStatusFilter($qb, string $status): void
+    private function applyStatusFilter(QueryBuilder $qb, string $status): void
     {
         if ('completed' === $status) {
             $qb->where('ot.status = :completed')
