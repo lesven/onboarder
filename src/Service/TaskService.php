@@ -43,7 +43,17 @@ class TaskService
         $dueDateType = $request->request->get('dueDateType');
         if ('fixed' === $dueDateType) {
             $dueDate = $request->request->get('dueDate');
-            $task->setDueDate($dueDate ? new \DateTimeImmutable($dueDate) : null);
+            if ($dueDate) {
+                $dateTime = \DateTimeImmutable::createFromFormat('Y-m-d', $dueDate);
+                if ($dateTime === false) {
+                    // Handle invalid date format (e.g., log an error or set to null)
+                    $task->setDueDate(null);
+                } else {
+                    $task->setDueDate($dateTime);
+                }
+            } else {
+                $task->setDueDate(null);
+            }
             $task->setDueDaysFromEntry(null);
         } elseif ('relative' === $dueDateType) {
             $dueDays = $request->request->get('dueDaysFromEntry');
