@@ -168,17 +168,39 @@ class DashboardController extends AbstractController
         ]);
     }
 
+    #[Route('/onboarding/task/{id}/toggle-complete', name: 'app_task_toggle_complete', methods: ['POST'])]
+    public function toggleTaskComplete(OnboardingTask $task, EntityManagerInterface $entityManager): Response
+    {
+        // Status umschalten
+        if ($task->getStatus() === OnboardingTask::STATUS_COMPLETED) {
+            $task->setStatus(OnboardingTask::STATUS_PENDING);
+            $task->setCompletedAt(null);
+            $message = 'Aufgabe "' . $task->getTitle() . '" wurde als ausstehend markiert.';
+            $type = 'info';
+        } else {
+            $task->markAsCompleted();
+            $message = 'Aufgabe "' . $task->getTitle() . '" wurde als erledigt markiert.';
+            $type = 'success';
+        }
+
+        $entityManager->flush();
+
+        $this->addFlash($type, $message);
+        return $this->redirectToRoute('app_onboarding_detail', ['id' => $task->getOnboarding()->getId()]);
+    }
+
     #[Route('/tasks', name: 'app_tasks_overview')]
     public function tasksOverview(EntityManagerInterface $entityManager): Response
     {
-        // Alle Aufgaben mit Filter-Optionen
-        $tasks = $entityManager->getRepository(Task::class)
-            ->createQueryBuilder('t')
-            ->leftJoin('t.onboarding', 'o')
-            ->leftJoin('t.taskBlock', 'tb')
-            ->leftJoin('t.assignedRole', 'r')
+        // Alle OnboardingTasks mit Filter-Optionen laden
+        $tasks = $entityManager->getRepository(OnboardingTask::class)
+            ->createQueryBuilder('ot')
+            ->leftJoin('ot.onboarding', 'o')
+            ->leftJoin('ot.taskBlock', 'tb')
+            ->leftJoin('ot.assignedRole', 'r')
             ->addSelect('o', 'tb', 'r')
-            ->orderBy('t.dueDate', 'ASC')
+            ->orderBy('ot.dueDate', 'ASC')
+            ->addOrderBy('ot.sortOrder', 'ASC')
             ->getQuery()
             ->getResult();
 
@@ -191,6 +213,19 @@ class DashboardController extends AbstractController
     public function adminRedirect(): Response
     {
         return $this->redirectToRoute('app_admin_dashboard');
+    }
+
+    #[Route('/onboarding/{id}/delete', name: 'app_onboarding_delete', methods: ['POST'])]
+    public function deleteOnboarding(Onboarding $onboarding, EntityManagerInterface $entityManager): Response
+    {
+        $fullName = $onboarding->getFullName();
+        
+        // Onboarding löschen (OnboardingTasks werden automatisch durch cascade gelöscht)
+        $entityManager->remove($onboarding);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Onboarding für ' . $fullName . ' wurde erfolgreich gelöscht!');
+        return $this->redirectToRoute('app_onboardings');
     }
 
     /**

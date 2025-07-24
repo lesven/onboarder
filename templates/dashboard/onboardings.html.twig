@@ -51,9 +51,14 @@
                                 </td>
                                 <td>
                                     <a href="{{ path('app_onboarding_detail', {id: onboarding.id}) }}" 
-                                       class="btn btn-sm btn-outline-primary">
-                                        <i class="bi bi-eye me-1"></i>Details
+                                       class="btn btn-sm btn-outline-primary" title="Details ansehen">
+                                        <i class="bi bi-eye"></i>
                                     </a>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                                            onclick="confirmDelete('{{ onboarding.fullName }}', '{{ path('app_onboarding_delete', {id: onboarding.id}) }}')"
+                                            title="Onboarding löschen">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
                                 </td>
                             </tr>
                         {% endfor %}
@@ -84,4 +89,43 @@
         </div>
     </div>
 {% endif %}
+
+<!-- Löschbestätigung Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="bi bi-exclamation-triangle text-danger me-2"></i>Onboarding löschen
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Möchten Sie das Onboarding für <strong id="deletePersonName"></strong> wirklich löschen?</p>
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>Achtung:</strong> Alle zugehörigen Aufgaben werden ebenfalls gelöscht. Diese Aktion kann nicht rückgängig gemacht werden!
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-1"></i>Löschen
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDelete(personName, deleteUrl) {
+    document.getElementById('deletePersonName').textContent = personName;
+    document.getElementById('deleteForm').action = deleteUrl;
+    
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    deleteModal.show();
+}
+</script>
 {% endblock %}
