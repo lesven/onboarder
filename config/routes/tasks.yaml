@@ -1,0 +1,4 @@
+# Task Management and Overview
+tasks:
+    resource: ../../src/Controller/TaskController.php
+    type: attribute

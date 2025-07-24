@@ -1,0 +1,4 @@
+# Task Form Management (Add/Edit einzelne Tasks)
+task_forms:
+    resource: ../../src/Controller/TaskFormController.php
+    type: attribute
