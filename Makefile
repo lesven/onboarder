@@ -1,58 +1,64 @@
 .PHONY: help start stop install setup shell console logs clean migration migrate
 
+# Docker Compose Command (kann für CI überschrieben werden)
+DOCKER_COMPOSE := docker-compose
+ifeq ($(CI),true)
+    DOCKER_COMPOSE := docker compose
+endif
+
 help: ## Zeigt verfügbare Befehle
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
 
 start: ## Startet Docker Container
-	docker-compose up -d
+	$(DOCKER_COMPOSE) up -d
 
 stop: ## Stoppt Docker Container
-	docker-compose down
+	$(DOCKER_COMPOSE) down
 
 install: ## Baut Container, installiert Abhängigkeiten und führt Setup aus
-	docker-compose up -d --build
-	docker-compose exec app composer install --no-interaction
+	$(DOCKER_COMPOSE) up -d --build
+	$(DOCKER_COMPOSE) exec app composer install --no-interaction
 	@echo "Prüfe ob bin/console existiert..."
-	docker compose exec --workdir /var/www/html app test -f bin/console && echo "bin/console gefunden" || echo "bin/console nicht gefunden"
+	$(DOCKER_COMPOSE) exec --workdir /var/www/html app test -f bin/console && echo "bin/console gefunden" || echo "bin/console nicht gefunden"
 	@echo "Räume Cache manuell auf..."
-	docker compose exec --workdir /var/www/html app rm -rf var/cache/* || true
+	$(DOCKER_COMPOSE) exec --workdir /var/www/html app rm -rf var/cache/* || true
 	@echo "Installation abgeschlossen!"
-	docker compose exec --workdir /var/www/html app /usr/local/bin/php-cs-fixer fix --diff --allow-risky=yes
+	$(DOCKER_COMPOSE) exec --workdir /var/www/html app /usr/local/bin/php-cs-fixer fix --diff --allow-risky=yes
 	@echo "CS Fixer abgeschlossen!"
 
 setup: ## Führt das Setup-Skript aus (nach erstem Start)
-	docker-compose exec app /var/www/html/docker/setup-entities.sh
+	$(DOCKER_COMPOSE) exec app /var/www/html/docker/setup-entities.sh
 
 shell: ## Öffnet Shell im App-Container
-	docker-compose exec app sh
+	$(DOCKER_COMPOSE) exec app sh
 
 console: ## Führt Symfony Console-Befehle aus (z.B. make console CMD="cache:clear")
-	docker-compose exec app php bin/console $(CMD)
+	$(DOCKER_COMPOSE) exec app php bin/console $(CMD)
 
 logs: ## Zeigt Container-Logs
-	docker-compose logs -f
+	$(DOCKER_COMPOSE) logs -f
 
 clean: ## Stoppt Container und entfernt Volumes
-	docker-compose down -v
+	$(DOCKER_COMPOSE) down -v
 
 migration: ## Erstellt neue Migration
-	docker-compose exec app php bin/console make:migration
+	$(DOCKER_COMPOSE) exec app php bin/console make:migration
 
 migrate: ## Führt Migrationen aus
-	docker-compose exec app php bin/console doctrine:migrations:migrate --no-interaction
+	$(DOCKER_COMPOSE) exec app php bin/console doctrine:migrations:migrate --no-interaction
 
 check: ## Führt Code-Quality-Checks aus
-	docker-compose exec app php-cs-fixer fix --dry-run --diff
-	docker-compose exec app php bin/console lint:twig templates/
-	docker-compose exec app php bin/console lint:yaml config/
+	$(DOCKER_COMPOSE) exec app php-cs-fixer fix --dry-run --diff
+	$(DOCKER_COMPOSE) exec app php bin/console lint:twig templates/
+	$(DOCKER_COMPOSE) exec app php bin/console lint:yaml config/
 
 test: ## Führt PHPUnit Tests aus
-	docker-compose exec app php bin/phpunit
+	$(DOCKER_COMPOSE) exec app php bin/phpunit
 
 ci-install: ## Installation für CI/CD (ohne interaktive Eingaben)
-	docker-compose up -d --build --quiet-pull
-	docker-compose exec -T app composer install --no-interaction --no-dev --optimize-autoloader
-	docker-compose exec -T app php bin/console cache:clear --env=prod --no-interaction
+	$(DOCKER_COMPOSE) up -d --build --quiet-pull
+	$(DOCKER_COMPOSE) exec -T app composer install --no-interaction --no-dev --optimize-autoloader
+	$(DOCKER_COMPOSE) exec -T app php bin/console cache:clear --env=prod --no-interaction
 
 # Beispiel-Befehle:
 # make start          - Container starten
