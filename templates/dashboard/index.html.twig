@@ -1,0 +1,174 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard - Onboarding System{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="bi bi-speedometer2 me-2"></i>Dashboard
+        </h1>
+    </div>
+</div>
+
+{# Statistik-Karten #}
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Aktive Onboardings</h5>
+                        <h2 class="mb-0">{{ stats.total_onboardings }}</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-people-fill fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Onboarding-Typen</h5>
+                        <h2 class="mb-0">{{ stats.total_types }}</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-collection-fill fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Basis-Typen</h5>
+                        <h2 class="mb-0">{{ stats.total_base_types }}</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-diagram-3-fill fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Aktuelle Onboardings #}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-person-check me-2"></i>Neueste Onboardings
+                </h5>
+                <a href="{{ path('app_onboardings') }}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-circle me-1"></i>Neues Onboarding
+                </a>
+            </div>
+            <div class="card-body">
+                {% if onboardings|length > 0 %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Eintrittsdatum</th>
+                                    <th>Tätigkeit</th>
+                                    <th>Team</th>
+                                    <th>Status</th>
+                                    <th>Aktionen</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for onboarding in onboardings|slice(0, 5) %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ onboarding.firstName }} {{ onboarding.lastName }}</strong>
+                                    </td>
+                                    <td>
+                                        {% if onboarding.entryDate %}
+                                            {{ onboarding.entryDate|date('d.m.Y') }}
+                                        {% else %}
+                                            <span class="text-muted">Nicht gesetzt</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ onboarding.jobTitle ?? 'Nicht angegeben' }}</td>
+                                    <td>{{ onboarding.team ?? 'Nicht angegeben' }}</td>
+                                    <td>
+                                        <span class="badge bg-primary">Aktiv</span>
+                                    </td>
+                                    <td>
+                                        <a href="#" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="#" class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-inbox fs-1 text-muted d-block mb-2"></i>
+                        <p class="text-muted">Noch keine Onboardings vorhanden.</p>
+                        <a href="{{ path('app_onboardings') }}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle me-1"></i>Erstes Onboarding erstellen
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Schnellzugriff-Buttons #}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-lightning-fill me-2"></i>Schnellzugriff
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ path('app_onboardings') }}" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-person-plus-fill d-block mb-1"></i>
+                            Neues Onboarding
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ path('app_admin') }}" class="btn btn-outline-secondary w-100">
+                            <i class="bi bi-collection d-block mb-1"></i>
+                            Onboarding-Typen
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ path('app_admin') }}" class="btn btn-outline-info w-100">
+                            <i class="bi bi-envelope d-block mb-1"></i>
+                            E-Mail Templates
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ path('app_admin') }}" class="btn btn-outline-success w-100">
+                            <i class="bi bi-people d-block mb-1"></i>
+                            Rollen verwalten
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

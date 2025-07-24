@@ -1,0 +1,162 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Aufgaben-Übersicht - {{ parent() }}{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4"><i class="bi bi-list-task"></i> Aufgaben-Übersicht</h1>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5><i class="bi bi-table"></i> Alle Aufgaben</h5>
+                    <div>
+                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse">
+                            <i class="bi bi-funnel"></i> Filter
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="collapse" id="filterCollapse">
+                <div class="card-body border-bottom">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label class="form-label">Status</label>
+                            <select class="form-select form-select-sm">
+                                <option>Alle</option>
+                                <option>Offen</option>
+                                <option>Abgeschlossen</option>
+                                <option>Überfällig</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Zuständigkeit</label>
+                            <select class="form-select form-select-sm">
+                                <option>Alle</option>
+                                <option>IT</option>
+                                <option>HR</option>
+                                <option>Vorgesetzter</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Mitarbeiter</label>
+                            <input type="text" class="form-control form-control-sm" placeholder="Name eingeben...">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">&nbsp;</label>
+                            <div>
+                                <button class="btn btn-primary btn-sm">Filter anwenden</button>
+                                <button class="btn btn-outline-secondary btn-sm">Zurücksetzen</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                {% if tasks %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Aufgabe</th>
+                                    <th>Mitarbeiter</th>
+                                    <th>Block</th>
+                                    <th>Zuständigkeit</th>
+                                    <th>Fälligkeit</th>
+                                    <th>Status</th>
+                                    <th>Aktionen</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for task in tasks %}
+                                <tr class="{% if task.calculatedDueDate and task.calculatedDueDate < date() and not task.isCompleted %}table-danger{% endif %}">
+                                    <td>
+                                        <strong>{{ task.title }}</strong>
+                                        {% if task.description %}
+                                            <br><small class="text-muted">{{ task.description|slice(0, 100) }}{% if task.description|length > 100 %}...{% endif %}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if task.onboarding %}
+                                            <a href="{{ path('app_onboarding_detail', {id: task.onboarding.id}) }}" class="text-decoration-none">
+                                                {{ task.onboarding.fullName }}
+                                            </a>
+                                            <br><small class="text-muted">{{ task.onboarding.position ?: 'Keine Position' }}</small>
+                                        {% else %}
+                                            <span class="text-muted">Nicht zugeordnet</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ task.taskBlock.name }}</span>
+                                    </td>
+                                    <td>
+                                        {% if task.assignedRole %}
+                                            <i class="bi bi-person-badge"></i> {{ task.assignedRole.name }}
+                                            <br><small class="text-muted">{{ task.assignedRole.email }}</small>
+                                        {% elseif task.assignedEmail %}
+                                            <i class="bi bi-envelope"></i> {{ task.assignedEmail }}
+                                        {% else %}
+                                            <span class="text-muted">Nicht zugewiesen</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if task.calculatedDueDate %}
+                                            {{ task.calculatedDueDate|date('d.m.Y') }}
+                                            {% if task.calculatedDueDate < date() and not task.isCompleted %}
+                                                <br><small class="text-danger"><i class="bi bi-exclamation-triangle"></i> Überfällig</small>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-muted">Keine Frist</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if task.isCompleted %}
+                                            <span class="badge bg-success"><i class="bi bi-check-circle"></i> Abgeschlossen</span>
+                                            {% if task.completedAt %}
+                                                <br><small class="text-muted">{{ task.completedAt|date('d.m.Y H:i') }}</small>
+                                            {% endif %}
+                                        {% elseif not task.areDependenciesSatisfied %}
+                                            <span class="badge bg-warning"><i class="bi bi-clock"></i> Wartet auf Abhängigkeiten</span>
+                                        {% else %}
+                                            <span class="badge bg-primary"><i class="bi bi-circle"></i> Offen</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if not task.isCompleted %}
+                                            <button class="btn btn-sm btn-success" title="Als erledigt markieren">
+                                                <i class="bi bi-check"></i>
+                                            </button>
+                                        {% endif %}
+                                        <button class="btn btn-sm btn-outline-primary" title="Details anzeigen">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                        {% if task.finalAssignedEmail %}
+                                            <button class="btn btn-sm btn-outline-info" title="E-Mail senden">
+                                                <i class="bi bi-envelope"></i>
+                                            </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-inbox" style="font-size: 3rem; color: #ccc;"></i>
+                        <p class="text-muted mt-3">Noch keine Aufgaben vorhanden</p>
+                        <p class="text-muted">Aufgaben werden automatisch erstellt, wenn ein Onboarding gestartet wird.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
