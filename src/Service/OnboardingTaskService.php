@@ -100,7 +100,7 @@ class OnboardingTaskService
 
         foreach ($onboarding->getOnboardingTasks() as $task) {
             if (null !== $task->getDueDaysFromEntry()) {
-                $task->setDueDate($entryDate->modify(sprintf('%+d days', $task->getDueDaysFromEntry())));
+                $task->setDueDate((clone $entryDate)->modify(sprintf('%+d days', $task->getDueDaysFromEntry())));
                 $task->setUpdatedAt(new \DateTimeImmutable());
             }
         }
