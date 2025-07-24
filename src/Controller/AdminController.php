@@ -187,7 +187,7 @@ class AdminController extends AbstractController
         return $this->redirectToRoute('app_admin_onboarding_types');
     }
 
-    #[Route('/task-blocks/new', name: 'app_admin_new_task_block', methods: ['GET', 'POST'])]
+    #[Route('/admin/task-blocks/new', name: 'app_admin_new_task_block', methods: ['GET', 'POST'])]
     public function newTaskBlock(Request $request, EntityManagerInterface $entityManager): Response
     {
         if ($request->isMethod('POST')) {
