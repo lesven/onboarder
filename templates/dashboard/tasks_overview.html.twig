@@ -31,30 +31,30 @@
                                 <label class="form-label">Status</label>
                                 <select name="status" class="form-select form-select-sm">
                                     <option value="">Nur offene Tasks</option>
-                                    <option value="all" {% if app.request.get('status') == 'all' %}selected{% endif %}>Alle Tasks</option>
-                                    <option value="completed" {% if app.request.get('status') == 'completed' %}selected{% endif %}>Nur abgeschlossene</option>
-                                    <option value="overdue" {% if app.request.get('status') == 'overdue' %}selected{% endif %}>Nur überfällige</option>
+                                    <option value="all" {% if statusFilter == 'all' %}selected{% endif %}>Alle Tasks</option>
+                                    <option value="completed" {% if statusFilter == 'completed' %}selected{% endif %}>Nur abgeschlossene</option>
+                                    <option value="overdue" {% if statusFilter == 'overdue' %}selected{% endif %}>Nur überfällige</option>
                                 </select>
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label">Zuständigkeit</label>
                                 <select name="assignee" class="form-select form-select-sm">
                                     <option value="">Alle</option>
-                                    <option value="it" {% if app.request.get('assignee') == 'it' %}selected{% endif %}>IT</option>
-                                    <option value="hr" {% if app.request.get('assignee') == 'hr' %}selected{% endif %}>HR</option>
-                                    <option value="manager" {% if app.request.get('assignee') == 'manager' %}selected{% endif %}>Vorgesetzter</option>
+                                    <option value="it" {% if assigneeFilter == 'it' %}selected{% endif %}>IT</option>
+                                    <option value="hr" {% if assigneeFilter == 'hr' %}selected{% endif %}>HR</option>
+                                    <option value="manager" {% if assigneeFilter == 'manager' %}selected{% endif %}>Vorgesetzter</option>
                                 </select>
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label">Mitarbeiter</label>
-                                <input type="text" name="employee" class="form-control form-control-sm" 
-                                       placeholder="Name eingeben..." value="{{ app.request.get('employee', '') }}">
+                                <input type="text" name="employee" class="form-control form-control-sm"
+                                       placeholder="Name eingeben..." value="{{ employeeFilter }}">
                             </div>
                             <div class="col-md-3">
                             <label class="form-label">&nbsp;</label>
                             <div>
-                                <button class="btn btn-primary btn-sm">Filter anwenden</button>
-                                <button class="btn btn-outline-secondary btn-sm">Zurücksetzen</button>
+                                <button type="submit" class="btn btn-primary btn-sm">Filter anwenden</button>
+                                <button type="submit" name="reset" value="1" class="btn btn-outline-secondary btn-sm">Zurücksetzen</button>
                             </div>
                         </div>
                         </div>
