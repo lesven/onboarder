@@ -7,7 +7,6 @@ use App\Entity\Onboarding;
 use App\Entity\OnboardingTask;
 use App\Entity\OnboardingType;
 use App\Entity\Role;
-use App\Entity\Task;
 use App\Service\OnboardingTaskService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -20,6 +19,7 @@ class DashboardController extends AbstractController
     public function __construct(private readonly OnboardingTaskService $taskService)
     {
     }
+
     #[Route('/', name: 'app_dashboard')]
     public function index(EntityManagerInterface $entityManager): Response
     {
@@ -280,5 +280,4 @@ class DashboardController extends AbstractController
 
         return $this->redirectToRoute('app_onboarding_detail', ['id' => $onboardingId]);
     }
-
 }

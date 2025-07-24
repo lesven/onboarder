@@ -23,13 +23,15 @@ install: ## Baut Container, installiert Abhängigkeiten und führt Setup aus
 	@echo "Räume Cache manuell auf..."
 	$(DOCKER_COMPOSE) exec --workdir /var/www/html app rm -rf var/cache/* || true
 	@echo "Installation abgeschlossen!"
-	$(DOCKER_COMPOSE) exec --workdir /var/www/html app /usr/local/bin/php-cs-fixer fix --diff --allow-risky=yes
+	$(DOCKER_COMPOSE) exec --workdir /var/www/html app /usr/local/bin/php-cs-fixer fix --dry-run --diff --allow-risky=yes
 	@echo "CS Fixer abgeschlossen!"
 	make cache
 
 cache: ## Leert den Symfony Cache
 	$(DOCKER_COMPOSE) exec app php bin/console cache:clear
-
+fix:
+	$(DOCKER_COMPOSE) exec app /usr/local/bin/php-cs-fixer fix --diff --allow-risky=yes
+	@echo "CS Fixer abgeschlossen!"
 setup: ## Führt das Setup-Skript aus (nach erstem Start)
 	$(DOCKER_COMPOSE) exec app chmod +x /var/www/html/docker/setup-entities.sh
 	$(DOCKER_COMPOSE) exec app /var/www/html/docker/setup-entities.sh
