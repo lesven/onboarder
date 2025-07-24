@@ -275,7 +275,7 @@ class DashboardController extends AbstractController
             $task->setOnboarding($onboarding);
             $task->setTitle($request->request->get('title'));
             $task->setDescription($request->request->get('description'));
-            $task->setSortOrder((int)$request->request->get('sortOrder') ?: 0);
+            $task->setSortOrder((int)($request->request->get('sortOrder') ?: 0));
 
             $dueDateType = $request->request->get('dueDateType', 'none');
             if ($dueDateType === 'fixed') {
