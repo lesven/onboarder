@@ -30,6 +30,18 @@ class TaskService
     {
     }
 
+    /**
+     * Creates a new Task entity, associates it with the given TaskBlock, and populates its properties
+     * based on the provided Request object. Persists the Task to the database.
+     *
+     * @param TaskBlock $taskBlock The TaskBlock entity to associate with the new Task.
+     * @param Request $request The HTTP request containing data to populate the Task.
+     * 
+     * @return Task The newly created Task entity.
+     * 
+     * @throws \Doctrine\ORM\ORMException If there is an issue with persisting the entity.
+     * @throws \Doctrine\DBAL\Exception If there is a database error during the flush operation.
+     */
     public function createTask(TaskBlock $taskBlock, Request $request): Task
     {
         $task = new Task();
