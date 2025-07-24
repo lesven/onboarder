@@ -372,19 +372,21 @@ class DashboardController extends AbstractController
                 $task->setDueDaysFromEntry(null);
             }
 
-            $task->setAssignedRole(null);
-            $task->setAssignedEmail(null);
-
             $roleId = $request->request->get('assignedRole');
             if ($roleId) {
                 $role = $entityManager->getRepository(Role::class)->find($roleId);
                 if ($role) {
                     $task->setAssignedRole($role);
                 }
+            } else {
+                $task->setAssignedRole(null);
             }
+
             $assignedEmail = $request->request->get('assignedEmail');
             if ($assignedEmail) {
                 $task->setAssignedEmail($assignedEmail);
+            } else {
+                $task->setAssignedEmail(null);
             }
 
             if ($request->request->get('sendEmail')) {
