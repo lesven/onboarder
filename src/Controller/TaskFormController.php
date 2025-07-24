@@ -51,7 +51,7 @@ class TaskFormController extends AbstractController
     public function edit(int $onboardingId, OnboardingTask $task, Request $request, EntityManagerInterface $entityManager): Response
     {
         // Sicherheitscheck: Task gehört zum richtigen Onboarding
-        if ($task->getOnboarding()->getId() !== $onboardingId) {
+        if ((int) $task->getOnboarding()->getId() !== (int) $onboardingId) {
             throw $this->createNotFoundException('Task gehört nicht zu diesem Onboarding');
         }
 
