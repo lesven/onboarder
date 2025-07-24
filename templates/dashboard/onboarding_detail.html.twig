@@ -110,7 +110,8 @@
                                         <th style="width: 35%;">Aufgabe</th>
                                         <th style="width: 15%;">Status</th>
                                         <th style="width: 20%;">Fälligkeitsdatum</th>
-                                        <th style="width: 25%;">Zugewiesen an</th>
+                                        <th style="width: 20%;">Zugewiesen an</th>
+                                        <th style="width: 10%;">Aktionen</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -165,6 +166,14 @@
                                                 {% else %}
                                                     <span class="text-muted">Nicht zugewiesen</span>
                                                 {% endif %}
+                                            </td>
+                                            <td class="text-end">
+                                                <a href="{{ path('app_onboarding_task_edit', {'id': task.id}) }}" class="btn btn-sm btn-outline-secondary" title="Bearbeiten">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <form method="post" action="{{ path('app_onboarding_task_delete', {'id': task.id}) }}" style="display:inline-block" onsubmit="return confirm('Aufgabe wirklich l\u00f6schen?');">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="L\u00f6schen"><i class="bi bi-trash"></i></button>
+                                                </form>
                                             </td>
                                         </tr>
                                     {% endfor %}

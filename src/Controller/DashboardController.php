@@ -328,7 +328,101 @@ class DashboardController extends AbstractController
         return $this->render('dashboard/onboarding_task_form.html.twig', [
             'onboarding' => $onboarding,
             'roles' => $roles,
+            'task' => null,
         ]);
+    }
+
+    #[Route('/onboarding/task/{id}/edit', name: 'app_onboarding_task_edit')]
+    public function editOnboardingTask(OnboardingTask $task, Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $onboarding = $task->getOnboarding();
+
+        if ($request->isMethod('POST')) {
+            $task->setTitle($request->request->get('title'));
+            $task->setDescription($request->request->get('description'));
+            $task->setSortOrder((int) ($request->request->get('sortOrder') ?: 0));
+
+            $dueDateType = $request->request->get('dueDateType', 'none');
+            if ('fixed' === $dueDateType) {
+                $dueDate = $request->request->get('dueDate');
+                if ($dueDate) {
+                    $task->setDueDate(new \DateTimeImmutable($dueDate));
+                    $task->setDueDaysFromEntry(null);
+                } else {
+                    $task->setDueDate(null);
+                    $task->setDueDaysFromEntry(null);
+                }
+            } elseif ('relative' === $dueDateType) {
+                $days = $request->request->get('dueDaysFromEntry');
+                if (null !== $days && '' !== $days) {
+                    $daysInt = (int) $days;
+                    $task->setDueDaysFromEntry($daysInt);
+                    $entryDate = $onboarding->getEntryDate();
+                    if ($entryDate) {
+                        $task->setDueDate($entryDate->modify(sprintf('%+d days', $daysInt)));
+                    } else {
+                        $task->setDueDate(null);
+                    }
+                } else {
+                    $task->setDueDate(null);
+                    $task->setDueDaysFromEntry(null);
+                }
+            } else {
+                $task->setDueDate(null);
+                $task->setDueDaysFromEntry(null);
+            }
+
+            $task->setAssignedRole(null);
+            $task->setAssignedEmail(null);
+
+            $roleId = $request->request->get('assignedRole');
+            if ($roleId) {
+                $role = $entityManager->getRepository(Role::class)->find($roleId);
+                if ($role) {
+                    $task->setAssignedRole($role);
+                }
+            }
+            $assignedEmail = $request->request->get('assignedEmail');
+            if ($assignedEmail) {
+                $task->setAssignedEmail($assignedEmail);
+            }
+
+            if ($request->request->get('sendEmail')) {
+                $task->setSendEmail(true);
+                $task->setEmailTemplate($request->request->get('emailTemplate'));
+            } else {
+                $task->setSendEmail(false);
+                $task->setEmailTemplate(null);
+            }
+
+            $task->setUpdatedAt(new \DateTimeImmutable());
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Aufgabe aktualisiert.');
+
+            return $this->redirectToRoute('app_onboarding_detail', ['id' => $onboarding->getId()]);
+        }
+
+        $roles = $entityManager->getRepository(Role::class)->findAll();
+
+        return $this->render('dashboard/onboarding_task_form.html.twig', [
+            'onboarding' => $onboarding,
+            'roles' => $roles,
+            'task' => $task,
+        ]);
+    }
+
+    #[Route('/onboarding/task/{id}/delete', name: 'app_onboarding_task_delete', methods: ['POST'])]
+    public function deleteOnboardingTask(OnboardingTask $task, EntityManagerInterface $entityManager): Response
+    {
+        $onboardingId = $task->getOnboarding()->getId();
+
+        $entityManager->remove($task);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Aufgabe gelöscht.');
+
+        return $this->redirectToRoute('app_onboarding_detail', ['id' => $onboardingId]);
     }
 
     /**
