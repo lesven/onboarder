@@ -7,6 +7,7 @@ use App\Entity\OnboardingType;
 use App\Entity\Role;
 use App\Entity\Task;
 use App\Entity\TaskBlock;
+use App\Service\TaskService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -370,54 +371,10 @@ class AdminController extends AbstractController
     }
 
     #[Route('/task-blocks/{id}/tasks/new', name: 'app_admin_task_block_new_task', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
-    public function newTaskForBlock(TaskBlock $taskBlock, Request $request, EntityManagerInterface $entityManager): Response
+    public function newTaskForBlock(TaskBlock $taskBlock, Request $request, EntityManagerInterface $entityManager, TaskService $taskService): Response
     {
         if ($request->isMethod('POST')) {
-            $task = new Task();
-            $task->setTitle($request->request->get('title'));
-            $task->setDescription($request->request->get('description'));
-            $task->setSortOrder((int) $request->request->get('sortOrder') ?: 0);
-            $task->setTaskBlock($taskBlock);
-
-            // Fälligkeit konfigurieren
-            $dueDateType = $request->request->get('dueDateType');
-            if ('fixed' === $dueDateType) {
-                $dueDate = $request->request->get('dueDate');
-                if ($dueDate) {
-                    $task->setDueDate(new \DateTimeImmutable($dueDate));
-                }
-            } elseif ('relative' === $dueDateType) {
-                $dueDays = $request->request->get('dueDaysFromEntry');
-                if (null !== $dueDays && '' !== $dueDays) {
-                    $task->setDueDaysFromEntry((int) $dueDays);
-                }
-            }
-
-            // Zuständigkeit
-            $assignedEmail = $request->request->get('assignedEmail');
-            if ($assignedEmail) {
-                $task->setAssignedEmail($assignedEmail);
-            }
-
-            $assignedRoleId = $request->request->get('assignedRole');
-            if ($assignedRoleId) {
-                $role = $entityManager->getRepository(Role::class)->find($assignedRoleId);
-                if ($role) {
-                    $task->setAssignedRole($role);
-                }
-            }
-
-            // E-Mail-Konfiguration
-            $sendEmail = $request->request->get('sendEmail');
-            if ($sendEmail) {
-                $task->setEmailTemplate($request->request->get('emailTemplate'));
-                // E-Mail wird zur Fälligkeit der Task versendet (kein separates Datum)
-            } else {
-                $task->setEmailTemplate(null);
-            }
-
-            $entityManager->persist($task);
-            $entityManager->flush();
+            $taskService->createTask($taskBlock, $request);
 
             $this->addFlash('success', 'Task wurde erfolgreich erstellt.');
 
@@ -435,62 +392,14 @@ class AdminController extends AbstractController
     }
 
     #[Route('/task-blocks/{id}/tasks/{taskId}/edit', name: 'app_admin_task_edit', requirements: ['id' => '\d+', 'taskId' => '\d+'], methods: ['GET', 'POST'])]
-    public function editTask(TaskBlock $taskBlock, int $taskId, Request $request, EntityManagerInterface $entityManager): Response
+    public function editTask(TaskBlock $taskBlock, int $taskId, Request $request, EntityManagerInterface $entityManager, TaskService $taskService): Response
     {
         $task = $entityManager->getRepository(Task::class)->find($taskId);
         if (!$task || $task->getTaskBlock()->getId() !== $taskBlock->getId()) {
             throw $this->createNotFoundException('Task not found');
         }
         if ($request->isMethod('POST')) {
-            $task->setTitle($request->request->get('title'));
-            $task->setDescription($request->request->get('description'));
-            $task->setSortOrder((int) $request->request->get('sortOrder') ?: 0);
-
-            // Fälligkeit konfigurieren
-            $dueDateType = $request->request->get('dueDateType');
-            if ('fixed' === $dueDateType) {
-                $dueDate = $request->request->get('dueDate');
-                if ($dueDate) {
-                    $task->setDueDate(new \DateTimeImmutable($dueDate));
-                    $task->setDueDaysFromEntry(null);
-                }
-            } elseif ('relative' === $dueDateType) {
-                $dueDays = $request->request->get('dueDaysFromEntry');
-                if (null !== $dueDays && '' !== $dueDays) {
-                    $task->setDueDaysFromEntry((int) $dueDays);
-                    $task->setDueDate(null);
-                }
-            } else {
-                $task->setDueDate(null);
-                $task->setDueDaysFromEntry(null);
-            }
-
-            // Zuständigkeit zurücksetzen
-            $task->setAssignedEmail(null);
-            $task->setAssignedRole(null);
-
-            $assignedEmail = $request->request->get('assignedEmail');
-            if ($assignedEmail) {
-                $task->setAssignedEmail($assignedEmail);
-            }
-
-            $assignedRoleId = $request->request->get('assignedRole');
-            if ($assignedRoleId) {
-                $role = $entityManager->getRepository(Role::class)->find($assignedRoleId);
-                if ($role) {
-                    $task->setAssignedRole($role);
-                }
-            }
-
-            // E-Mail-Konfiguration
-            $sendEmail = $request->request->get('sendEmail');
-            if ($sendEmail) {
-                $task->setEmailTemplate($request->request->get('emailTemplate'));
-            } else {
-                $task->setEmailTemplate(null);
-            }
-
-            $entityManager->flush();
+            $taskService->updateTask($task, $request);
 
             $this->addFlash('success', 'Task wurde erfolgreich aktualisiert.');
 
