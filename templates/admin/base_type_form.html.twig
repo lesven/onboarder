@@ -1,12 +1,15 @@
 {% extends 'base_clean.html.twig' %}
 
-{% block title %}Neuer BaseType - Administration - {{ parent() }}{% endblock %}
+{% set edit = baseType is defined %}
+{% block title %}{{ edit ? 'BaseType bearbeiten' : 'Neuer BaseType' }} - Administration - {{ parent() }}{% endblock %}
 
 {% block body %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h1><i class="bi bi-diagram-3 me-2"></i>Neuer BaseType</h1>
-        <p class="text-muted mb-0">Erstellen Sie einen neuen Basis-Typ für Onboarding-Templates</p>
+        <h1><i class="bi bi-diagram-3 me-2"></i>{{ edit ? 'BaseType bearbeiten' : 'Neuer BaseType' }}</h1>
+        <p class="text-muted mb-0">
+            {{ edit ? 'Bearbeiten Sie einen bestehenden BaseType' : 'Erstellen Sie einen neuen Basis-Typ für Onboarding-Templates' }}
+        </p>
     </div>
     <a href="{{ path('app_admin_base_types') }}" class="btn btn-outline-secondary">
         <i class="bi bi-arrow-left me-1"></i>Zurück zur Übersicht
@@ -24,7 +27,7 @@
                 
                 <div class="mb-3">
                     <label for="name" class="form-label">Name</label>
-                    <input type="text" class="form-control" id="name" name="name" placeholder="Geben Sie den Namen des BaseTypes ein..." required>
+                    <input type="text" class="form-control" id="name" name="name" value="{{ baseType.name ?? '' }}" placeholder="Geben Sie den Namen des BaseTypes ein..." required>
                     <div class="form-text">
                         Der Name des BaseTypes, z.B. "Standard Onboarding" oder "IT-Mitarbeiter"
                     </div>
@@ -32,7 +35,7 @@
 
                 <div class="mb-3">
                     <label for="description" class="form-label">Beschreibung</label>
-                    <textarea class="form-control" id="description" name="description" rows="4" placeholder="Beschreiben Sie den Zweck und Inhalt dieses BaseTypes..."></textarea>
+                    <textarea class="form-control" id="description" name="description" rows="4" placeholder="Beschreiben Sie den Zweck und Inhalt dieses BaseTypes...">{{ baseType.description ?? '' }}</textarea>
                     <div class="form-text">
                         Eine detaillierte Beschreibung des BaseTypes und wofür er verwendet wird
                     </div>
@@ -40,7 +43,7 @@
 
                 <div class="d-flex justify-content-between">
                     <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-circle me-1"></i>BaseType erstellen
+                        <i class="bi bi-check-circle me-1"></i>{{ edit ? 'BaseType speichern' : 'BaseType erstellen' }}
                     </button>
                     <a href="{{ path('app_admin_base_types') }}" class="btn btn-outline-secondary">
                         <i class="bi bi-x-circle me-1"></i>Abbrechen
