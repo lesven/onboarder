@@ -260,7 +260,7 @@ class AdminController extends AbstractController
         ]);
     }
 
-    #[Route('/admin/task-blocks/{id}/delete', name: 'app_admin_task_block_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[Route('/task-blocks/{id}/delete', name: 'app_admin_task_block_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function deleteTaskBlock(TaskBlock $taskBlock, EntityManagerInterface $entityManager): Response
     {
         $entityManager->remove($taskBlock);
@@ -270,7 +270,7 @@ class AdminController extends AbstractController
         return $this->redirectToRoute('app_admin_task_blocks');
     }
 
-    #[Route('/admin/task-blocks/{id}/tasks', name: 'app_admin_task_block_tasks', requirements: ['id' => '\d+'])]
+    #[Route('/task-blocks/{id}/tasks', name: 'app_admin_task_block_tasks', requirements: ['id' => '\d+'])]
     public function taskBlockTasks(TaskBlock $taskBlock, EntityManagerInterface $entityManager): Response
     {
         return $this->render('admin/task_block_tasks.html.twig', [
@@ -278,7 +278,7 @@ class AdminController extends AbstractController
         ]);
     }
 
-    #[Route('/admin/task-blocks/{id}/tasks/new', name: 'app_admin_task_block_new_task', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
+    #[Route('/task-blocks/{id}/tasks/new', name: 'app_admin_task_block_new_task', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
     public function newTaskForBlock(TaskBlock $taskBlock, Request $request, EntityManagerInterface $entityManager): Response
     {
         if ($request->isMethod('POST')) {
@@ -342,7 +342,7 @@ class AdminController extends AbstractController
         ]);
     }
 
-    #[Route('/admin/task-blocks/{id}/tasks/{taskId}/edit', name: 'app_admin_task_edit', requirements: ['id' => '\d+', 'taskId' => '\d+'], methods: ['GET', 'POST'])]
+    #[Route('/task-blocks/{id}/tasks/{taskId}/edit', name: 'app_admin_task_edit', requirements: ['id' => '\d+', 'taskId' => '\d+'], methods: ['GET', 'POST'])]
     public function editTask(TaskBlock $taskBlock, int $taskId, Request $request, EntityManagerInterface $entityManager): Response
     {
         $task = $entityManager->getRepository(Task::class)->find($taskId);
@@ -414,7 +414,7 @@ class AdminController extends AbstractController
         ]);
     }
 
-    #[Route('/admin/task-blocks/{id}/tasks/{taskId}/delete', name: 'app_admin_task_delete', requirements: ['id' => '\d+', 'taskId' => '\d+'], methods: ['POST'])]
+    #[Route('/task-blocks/{id}/tasks/{taskId}/delete', name: 'app_admin_task_delete', requirements: ['id' => '\d+', 'taskId' => '\d+'], methods: ['POST'])]
     public function deleteTask(TaskBlock $taskBlock, int $taskId, EntityManagerInterface $entityManager): Response
     {
         $task = $entityManager->getRepository(Task::class)->find($taskId);
