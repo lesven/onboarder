@@ -35,7 +35,7 @@ class OnboardingAdminController extends AbstractController
         ]);
     }
 
-    #[Route('/admin/task-blocks/new', name: 'app_admin_new_task_block', methods: ['GET', 'POST'])]
+    #[Route('/task-blocks/new', name: 'app_admin_new_task_block', methods: ['GET', 'POST'])]
     public function newTaskBlock(Request $request, EntityManagerInterface $entityManager): Response
     {
         if ($request->isMethod('POST')) {
