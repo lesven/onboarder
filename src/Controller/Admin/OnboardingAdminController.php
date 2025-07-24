@@ -76,7 +76,7 @@ class OnboardingAdminController extends AbstractController
         ]);
     }
 
-    #[Route('/admin/task-blocks/{id}', name: 'app_admin_task_block_show', requirements: ['id' => '\\d+'])]
+    #[Route('/task-blocks/{id}', name: 'app_admin_task_block_show', requirements: ['id' => '\\d+'])]
     public function showTaskBlock(TaskBlock $taskBlock): Response
     {
         return $this->render('admin/task_block_show.html.twig', [
