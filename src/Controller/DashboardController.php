@@ -8,6 +8,7 @@ use App\Entity\OnboardingTask;
 use App\Entity\OnboardingType;
 use App\Entity\Role;
 use App\Entity\Task;
+use App\Service\OnboardingTaskService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,6 +17,9 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class DashboardController extends AbstractController
 {
+    public function __construct(private readonly OnboardingTaskService $taskService)
+    {
+    }
     #[Route('/', name: 'app_dashboard')]
     public function index(EntityManagerInterface $entityManager): Response
     {
@@ -122,7 +126,7 @@ class DashboardController extends AbstractController
             $entityManager->flush();
 
             // Tasks aus TaskBlocks generieren
-            $this->generateTasksForOnboarding($onboarding, $entityManager);
+            $this->taskService->generateForOnboarding($onboarding);
 
             $this->addFlash('success', 'Onboarding für '.$onboarding->getFullName().' wurde erfolgreich erstellt!');
 
@@ -173,21 +177,9 @@ class DashboardController extends AbstractController
     }
 
     #[Route('/onboarding/task/{id}/toggle-complete', name: 'app_task_toggle_complete', methods: ['POST'])]
-    public function toggleTaskComplete(OnboardingTask $task, EntityManagerInterface $entityManager, Request $request): Response
+    public function toggleTaskComplete(OnboardingTask $task, Request $request): Response
     {
-        // Status umschalten
-        if (OnboardingTask::STATUS_COMPLETED === $task->getStatus()) {
-            $task->setStatus(OnboardingTask::STATUS_PENDING);
-            $task->setCompletedAt(null);
-            $message = 'Aufgabe "'.$task->getTitle().'" wurde als ausstehend markiert.';
-            $type = 'info';
-        } else {
-            $task->markAsCompleted();
-            $message = 'Aufgabe "'.$task->getTitle().'" wurde als erledigt markiert.';
-            $type = 'success';
-        }
-
-        $entityManager->flush();
+        [$type, $message] = $this->taskService->toggleStatus($task);
 
         $this->addFlash($type, $message);
 
@@ -203,46 +195,11 @@ class DashboardController extends AbstractController
     #[Route('/tasks', name: 'app_tasks_overview')]
     public function tasksOverview(EntityManagerInterface $entityManager, Request $request): Response
     {
-        $qb = $entityManager->getRepository(OnboardingTask::class)
-            ->createQueryBuilder('ot')
-            ->leftJoin('ot.onboarding', 'o')
-            ->leftJoin('ot.taskBlock', 'tb')
-            ->leftJoin('ot.assignedRole', 'r')
-            ->addSelect('o', 'tb', 'r');
-
-        // Status-Filter
         $statusFilter = $request->query->get('status', '');
-        if ('completed' === $statusFilter) {
-            $qb->where('ot.status = :completed')
-               ->setParameter('completed', OnboardingTask::STATUS_COMPLETED);
-        } elseif ('overdue' === $statusFilter) {
-            $qb->where('ot.status != :completed AND ot.dueDate < :now')
-               ->setParameter('completed', OnboardingTask::STATUS_COMPLETED)
-               ->setParameter('now', new \DateTimeImmutable());
-        } elseif ('all' !== $statusFilter) {
-            // Standard: nur offene Tasks
-            $qb->where('ot.status != :completed')
-               ->setParameter('completed', OnboardingTask::STATUS_COMPLETED);
-        }
-
-        // Mitarbeiter-Filter
         $employeeFilter = $request->query->get('employee', '');
-        if ($employeeFilter) {
-            $qb->andWhere('o.firstName LIKE :employee OR o.lastName LIKE :employee')
-               ->setParameter('employee', '%'.$employeeFilter.'%');
-        }
-
-        // Zuständigkeits-Filter (vereinfacht)
         $assigneeFilter = $request->query->get('assignee', '');
-        if ($assigneeFilter) {
-            $qb->andWhere('r.name LIKE :assignee OR ot.assignedEmail LIKE :assignee')
-               ->setParameter('assignee', '%'.$assigneeFilter.'%');
-        }
 
-        $tasks = $qb->orderBy('ot.dueDate', 'ASC')
-                    ->addOrderBy('ot.sortOrder', 'ASC')
-                    ->getQuery()
-                    ->getResult();
+        $tasks = $this->taskService->getFilteredTasks($statusFilter, $employeeFilter, $assigneeFilter);
 
         return $this->render('dashboard/tasks_overview.html.twig', [
             'tasks' => $tasks,
@@ -273,50 +230,7 @@ class DashboardController extends AbstractController
     public function addOnboardingTask(Onboarding $onboarding, Request $request, EntityManagerInterface $entityManager): Response
     {
         if ($request->isMethod('POST')) {
-            $task = new OnboardingTask();
-            $task->setOnboarding($onboarding);
-            $task->setTitle($request->request->get('title'));
-            $task->setDescription($request->request->get('description'));
-            $task->setSortOrder((int) ($request->request->get('sortOrder') ?: 0));
-
-            $dueDateType = $request->request->get('dueDateType', 'none');
-            if ('fixed' === $dueDateType) {
-                $dueDate = $request->request->get('dueDate');
-                if ($dueDate) {
-                    $task->setDueDate(new \DateTimeImmutable($dueDate));
-                }
-            } elseif ('relative' === $dueDateType) {
-                $days = $request->request->get('dueDaysFromEntry');
-                if (null !== $days && '' !== $days) {
-                    $daysInt = (int) $days;
-                    $task->setDueDaysFromEntry($daysInt);
-                    $entryDate = $onboarding->getEntryDate();
-                    if ($entryDate) {
-                        $newDueDate = $entryDate->modify(sprintf('%+d days', $daysInt));
-                        $task->setDueDate($newDueDate);
-                    }
-                }
-            }
-
-            $roleId = $request->request->get('assignedRole');
-            if ($roleId) {
-                $role = $entityManager->getRepository(Role::class)->find($roleId);
-                if ($role) {
-                    $task->setAssignedRole($role);
-                }
-            }
-            $assignedEmail = $request->request->get('assignedEmail');
-            if ($assignedEmail) {
-                $task->setAssignedEmail($assignedEmail);
-            }
-
-            if ($request->request->get('sendEmail')) {
-                $task->setSendEmail(true);
-                $task->setEmailTemplate($request->request->get('emailTemplate'));
-            }
-
-            $entityManager->persist($task);
-            $entityManager->flush();
+            $this->taskService->createOnboardingTask($onboarding, $request);
 
             $this->addFlash('success', 'Aufgabe hinzugefügt.');
 
@@ -338,67 +252,7 @@ class DashboardController extends AbstractController
         $onboarding = $task->getOnboarding();
 
         if ($request->isMethod('POST')) {
-            $task->setTitle($request->request->get('title'));
-            $task->setDescription($request->request->get('description'));
-            $task->setSortOrder((int) ($request->request->get('sortOrder') ?: 0));
-
-            $dueDateType = $request->request->get('dueDateType', 'none');
-            if ('fixed' === $dueDateType) {
-                $dueDate = $request->request->get('dueDate');
-                if ($dueDate) {
-                    $task->setDueDate(new \DateTimeImmutable($dueDate));
-                    $task->setDueDaysFromEntry(null);
-                } else {
-                    $task->setDueDate(null);
-                    $task->setDueDaysFromEntry(null);
-                }
-            } elseif ('relative' === $dueDateType) {
-                $days = $request->request->get('dueDaysFromEntry');
-                if (null !== $days && '' !== $days) {
-                    $daysInt = (int) $days;
-                    $task->setDueDaysFromEntry($daysInt);
-                    $entryDate = $onboarding->getEntryDate();
-                    if ($entryDate) {
-                        $task->setDueDate((clone $entryDate)->modify(sprintf('%+d days', $daysInt)));
-                    } else {
-                        $task->setDueDate(null);
-                    }
-                } else {
-                    $task->setDueDate(null);
-                    $task->setDueDaysFromEntry(null);
-                }
-            } else {
-                $task->setDueDate(null);
-                $task->setDueDaysFromEntry(null);
-            }
-
-            $roleId = $request->request->get('assignedRole');
-            if ($roleId) {
-                $role = $entityManager->getRepository(Role::class)->find($roleId);
-                if ($role) {
-                    $task->setAssignedRole($role);
-                }
-            } else {
-                $task->setAssignedRole(null);
-            }
-
-            $assignedEmail = $request->request->get('assignedEmail');
-            if ($assignedEmail) {
-                $task->setAssignedEmail($assignedEmail);
-            } else {
-                $task->setAssignedEmail(null);
-            }
-
-            if ($request->request->get('sendEmail')) {
-                $task->setSendEmail(true);
-                $task->setEmailTemplate($request->request->get('emailTemplate'));
-            } else {
-                $task->setSendEmail(false);
-                $task->setEmailTemplate(null);
-            }
-
-            $task->setUpdatedAt(new \DateTimeImmutable());
-            $entityManager->flush();
+            $this->taskService->updateOnboardingTask($task, $request);
 
             $this->addFlash('success', 'Aufgabe aktualisiert.');
 
@@ -427,120 +281,4 @@ class DashboardController extends AbstractController
         return $this->redirectToRoute('app_onboarding_detail', ['id' => $onboardingId]);
     }
 
-    /**
-     * Generiert OnboardingTasks für ein Onboarding basierend auf seinem OnboardingType.
-     */
-    private function generateTasksForOnboarding(Onboarding $onboarding, EntityManagerInterface $entityManager): void
-    {
-        $onboardingType = $onboarding->getOnboardingType();
-        if (!$onboardingType) {
-            return; // Kein OnboardingType zugeordnet
-        }
-
-        // Alle TaskBlocks sammeln und deduplizieren (TaskBlocks sind die Vorlagen)
-        $taskBlocks = [];
-        $processedTaskBlockIds = []; // Um TaskBlock-Duplikate zu vermeiden
-
-        // 1. TaskBlocks die direkt dem OnboardingType zugeordnet sind
-        foreach ($onboardingType->getTaskBlocks() as $taskBlock) {
-            if (!in_array($taskBlock->getId(), $processedTaskBlockIds)) {
-                $taskBlocks[] = $taskBlock;
-                $processedTaskBlockIds[] = $taskBlock->getId();
-            }
-        }
-
-        // 2. TaskBlocks die dem BaseType zugeordnet sind (falls vorhanden)
-        if ($onboardingType->getBaseType()) {
-            foreach ($onboardingType->getBaseType()->getTaskBlocks() as $taskBlock) {
-                // Nur hinzufügen wenn TaskBlock noch nicht verarbeitet wurde
-                if (!in_array($taskBlock->getId(), $processedTaskBlockIds)) {
-                    $taskBlocks[] = $taskBlock;
-                    $processedTaskBlockIds[] = $taskBlock->getId();
-                }
-            }
-        }
-
-        // OnboardingTasks aus allen TaskBlocks erstellen (Tasks hängen direkt am Onboarding)
-        foreach ($taskBlocks as $taskBlock) {
-            foreach ($taskBlock->getTasks() as $templateTask) {
-                // Neue OnboardingTask-Instanz für dieses Onboarding erstellen
-                $onboardingTask = new OnboardingTask();
-                $onboardingTask->setTitle($templateTask->getTitle());
-                $onboardingTask->setDescription($templateTask->getDescription());
-                $onboardingTask->setSortOrder($templateTask->getSortOrder());
-                $onboardingTask->setTaskBlock($taskBlock); // Referenz zur Vorlage
-                $onboardingTask->setTemplateTask($templateTask); // Referenz zur Template-Task
-                $onboardingTask->setOnboarding($onboarding); // Task hängt direkt am Onboarding
-
-                // Fälligkeit basierend auf Template und Eintrittsdatum berechnen
-                if ($templateTask->getDueDate()) {
-                    // Absolute Fälligkeit - direkt übernehmen
-                    $onboardingTask->setDueDate($templateTask->getDueDate());
-                } elseif (null !== $templateTask->getDueDaysFromEntry()) {
-                    // Relative Fälligkeit - basierend auf Eintrittsdatum berechnen
-                    $entryDate = $onboarding->getEntryDate();
-                    if ($entryDate) {
-                        // DateTimeImmutable modify erstellt eine neue Instanz
-                        $daysFromEntry = $templateTask->getDueDaysFromEntry();
-                        $effectiveDueDate = $entryDate->modify(sprintf('%+d days', $daysFromEntry));
-                        $onboardingTask->setDueDate($effectiveDueDate);
-                        $onboardingTask->setDueDaysFromEntry($daysFromEntry); // Für Referenz behalten
-
-                        // Debug: Überprüfe ob das Datum korrekt gesetzt wurde
-                        error_log(sprintf(
-                            'Task "%s": Entry Date = %s, Days = %d, Due Date = %s',
-                            $templateTask->getTitle(),
-                            $entryDate->format('Y-m-d'),
-                            $daysFromEntry,
-                            $effectiveDueDate->format('Y-m-d')
-                        ));
-                    } else {
-                        // Fallback: nur relative Tage setzen falls kein Eintrittsdatum vorhanden
-                        $onboardingTask->setDueDaysFromEntry($templateTask->getDueDaysFromEntry());
-                    }
-                }
-
-                // Zuständigkeit übernehmen
-                if ($templateTask->getAssignedRole()) {
-                    $onboardingTask->setAssignedRole($templateTask->getAssignedRole());
-                }
-                if ($templateTask->getAssignedEmail()) {
-                    $onboardingTask->setAssignedEmail($templateTask->getAssignedEmail());
-                }
-
-                // E-Mail-Konfiguration aus der neuen vereinfachten Struktur übernehmen
-                if ($templateTask->getEmailTemplate()) {
-                    $onboardingTask->setEmailTemplate($templateTask->getEmailTemplate());
-                    $onboardingTask->setSendEmail(true); // E-Mail aktivieren wenn Template vorhanden
-                }
-
-                $entityManager->persist($onboardingTask);
-            }
-        }
-
-        $entityManager->flush();
-    }
-
-    /**
-     * Aktualisiert die Fälligkeitsdaten aller OnboardingTasks eines Onboardings
-     * basierend auf dem aktuellen Eintrittsdatum.
-     */
-    private function updateTaskDueDates(Onboarding $onboarding, EntityManagerInterface $entityManager): void
-    {
-        $entryDate = $onboarding->getEntryDate();
-        if (!$entryDate) {
-            return; // Kein Eintrittsdatum verfügbar
-        }
-
-        foreach ($onboarding->getOnboardingTasks() as $onboardingTask) {
-            // Nur Tasks mit relativen Fälligkeiten aktualisieren
-            if (null !== $onboardingTask->getDueDaysFromEntry()) {
-                $effectiveDueDate = $entryDate->modify(sprintf('%+d days', $onboardingTask->getDueDaysFromEntry()));
-                $onboardingTask->setDueDate($effectiveDueDate);
-                $onboardingTask->setUpdatedAt(new \DateTimeImmutable());
-            }
-        }
-
-        $entityManager->flush();
-    }
 }
