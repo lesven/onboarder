@@ -59,7 +59,7 @@ class TaskQueryService
     /**
      * Wendet Mitarbeiterfilter an.
      */
-    private function applyEmployeeFilter($qb, string $employee): void
+    private function applyEmployeeFilter(QueryBuilder $qb, string $employee): void
     {
         if ($employee) {
             $qb->andWhere('o.firstName LIKE :employee OR o.lastName LIKE :employee')
