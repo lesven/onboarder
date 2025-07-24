@@ -12,7 +12,13 @@ stop: ## Stoppt Docker Container
 install: ## Baut Container, installiert Abhängigkeiten und führt Setup aus
 	docker-compose up -d --build
 	docker-compose exec app composer install --no-interaction
-	docker-compose exec app /var/www/html/docker/setup-entities.sh
+	@echo "Prüfe ob bin/console existiert..."
+	docker compose exec --workdir /var/www/html app test -f bin/console && echo "bin/console gefunden" || echo "bin/console nicht gefunden"
+	@echo "Räume Cache manuell auf..."
+	docker compose exec --workdir /var/www/html app rm -rf var/cache/* || true
+	@echo "Installation abgeschlossen!"
+	docker compose exec --workdir /var/www/html app /usr/local/bin/php-cs-fixer fix --dry-run --diff --allow-risky=yes
+	@echo "CS Fixer abgeschlossen!"
 
 setup: ## Führt das Setup-Skript aus (nach erstem Start)
 	docker-compose exec app /var/www/html/docker/setup-entities.sh

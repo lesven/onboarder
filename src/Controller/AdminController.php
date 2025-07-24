@@ -83,10 +83,68 @@ class AdminController extends AbstractController
             $entityManager->flush();
 
             $this->addFlash('success', 'BaseType wurde erfolgreich erstellt!');
+
             return $this->redirectToRoute('app_admin_base_types');
         }
 
         return $this->render('admin/base_type_form.html.twig');
+    }
+
+    #[Route('/base-type/{id}', name: 'app_admin_base_type_show')]
+    public function showBaseType(BaseType $baseType): Response
+    {
+        return $this->render('admin/base_type_show.html.twig', [
+            'baseType' => $baseType,
+        ]);
+    }
+
+    #[Route('/base-type/{id}/edit', name: 'app_admin_base_type_edit')]
+    public function editBaseType(Request $request, BaseType $baseType, EntityManagerInterface $entityManager): Response
+    {
+        if ($request->isMethod('POST')) {
+            $name = $request->request->get('name');
+            $description = $request->request->get('description');
+
+            // Validate name field
+            if (empty($name)) {
+                $this->addFlash('error', 'Der Name darf nicht leer sein.');
+                return $this->render('admin/base_type_form.html.twig', [
+                    'baseType' => $baseType,
+                ]);
+            }
+
+            // Check for uniqueness
+            $existingBaseType = $entityManager->getRepository(BaseType::class)->findOneBy(['name' => $name]);
+            if ($existingBaseType && $existingBaseType->getId() !== $baseType->getId()) {
+                $this->addFlash('error', 'Der Name muss eindeutig sein.');
+                return $this->render('admin/base_type_form.html.twig', [
+                    'baseType' => $baseType,
+                ]);
+            }
+
+            $baseType->setName($name);
+            $baseType->setDescription($description);
+            $baseType->setUpdatedAt(new \DateTimeImmutable());
+
+            $entityManager->flush();
+
+            $this->addFlash('success', 'BaseType wurde erfolgreich aktualisiert!');
+            return $this->redirectToRoute('app_admin_base_types');
+        }
+
+        return $this->render('admin/base_type_form.html.twig', [
+            'baseType' => $baseType,
+        ]);
+    }
+
+    #[Route('/base-type/{id}/delete', name: 'app_admin_base_type_delete')]
+    public function deleteBaseType(BaseType $baseType, EntityManagerInterface $entityManager): Response
+    {
+        $entityManager->remove($baseType);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'BaseType wurde erfolgreich gel\u00f6scht!');
+        return $this->redirectToRoute('app_admin_base_types');
     }
 
     #[Route('/role/new', name: 'app_admin_role_new')]
@@ -102,6 +160,7 @@ class AdminController extends AbstractController
             $entityManager->flush();
 
             $this->addFlash('success', 'Rolle wurde erfolgreich erstellt!');
+
             return $this->redirectToRoute('app_admin_roles');
         }
 
@@ -115,7 +174,7 @@ class AdminController extends AbstractController
             $onboardingType = new OnboardingType();
             $onboardingType->setName($request->request->get('name'));
             $onboardingType->setDescription($request->request->get('description'));
-            
+
             // BaseType zuweisen falls ausgewählt
             $baseTypeId = $request->request->get('baseType');
             if ($baseTypeId) {
@@ -129,6 +188,7 @@ class AdminController extends AbstractController
             $entityManager->flush();
 
             $this->addFlash('success', 'OnboardingType wurde erfolgreich erstellt!');
+
             return $this->redirectToRoute('app_admin_onboarding_types');
         }
 
@@ -166,6 +226,7 @@ class AdminController extends AbstractController
             $entityManager->flush();
 
             $this->addFlash('success', 'OnboardingType wurde erfolgreich aktualisiert!');
+
             return $this->redirectToRoute('app_admin_onboarding_types');
         }
 
@@ -184,6 +245,7 @@ class AdminController extends AbstractController
         $entityManager->flush();
 
         $this->addFlash('success', 'OnboardingType wurde erfolgreich gelöscht!');
+
         return $this->redirectToRoute('app_admin_onboarding_types');
     }
 
@@ -194,8 +256,8 @@ class AdminController extends AbstractController
             $taskBlock = new TaskBlock();
             $taskBlock->setName($request->request->get('name'));
             $taskBlock->setDescription($request->request->get('description'));
-            $taskBlock->setSortOrder((int)$request->request->get('sortOrder') ?: 0);
-            
+            $taskBlock->setSortOrder((int) $request->request->get('sortOrder') ?: 0);
+
             // BaseType optional zuordnen
             $baseTypeId = $request->request->get('baseType');
             if ($baseTypeId) {
@@ -204,7 +266,7 @@ class AdminController extends AbstractController
                     $taskBlock->setBaseType($baseType);
                 }
             }
-            
+
             // OnboardingType optional zuordnen
             $onboardingTypeId = $request->request->get('onboardingType');
             if ($onboardingTypeId) {
@@ -213,21 +275,22 @@ class AdminController extends AbstractController
                     $taskBlock->setOnboardingType($onboardingType);
                 }
             }
-            
+
             $entityManager->persist($taskBlock);
             $entityManager->flush();
-            
+
             $this->addFlash('success', 'TaskBlock wurde erfolgreich erstellt.');
+
             return $this->redirectToRoute('app_admin_task_blocks');
         }
-        
+
         // BaseTypes und OnboardingTypes für das Dropdown laden
         $baseTypes = $entityManager->getRepository(BaseType::class)->findAll();
         $onboardingTypes = $entityManager->getRepository(OnboardingType::class)->findAll();
-        
+
         return $this->render('admin/task_block_form.html.twig', [
             'baseTypes' => $baseTypes,
-            'onboardingTypes' => $onboardingTypes
+            'onboardingTypes' => $onboardingTypes,
         ]);
     }
 
@@ -235,7 +298,7 @@ class AdminController extends AbstractController
     public function showTaskBlock(TaskBlock $taskBlock): Response
     {
         return $this->render('admin/task_block_show.html.twig', [
-            'taskBlock' => $taskBlock
+            'taskBlock' => $taskBlock,
         ]);
     }
 
@@ -245,8 +308,8 @@ class AdminController extends AbstractController
         if ($request->isMethod('POST')) {
             $taskBlock->setName($request->request->get('name'));
             $taskBlock->setDescription($request->request->get('description'));
-            $taskBlock->setSortOrder((int)$request->request->get('sortOrder') ?: 0);
-            
+            $taskBlock->setSortOrder((int) $request->request->get('sortOrder') ?: 0);
+
             // BaseType optional zuordnen
             $baseTypeId = $request->request->get('baseType');
             if ($baseTypeId) {
@@ -255,7 +318,7 @@ class AdminController extends AbstractController
             } else {
                 $taskBlock->setBaseType(null);
             }
-            
+
             // OnboardingType optional zuordnen
             $onboardingTypeId = $request->request->get('onboardingType');
             if ($onboardingTypeId) {
@@ -264,21 +327,22 @@ class AdminController extends AbstractController
             } else {
                 $taskBlock->setOnboardingType(null);
             }
-            
+
             $entityManager->flush();
-            
+
             $this->addFlash('success', 'TaskBlock wurde erfolgreich aktualisiert.');
+
             return $this->redirectToRoute('app_admin_task_blocks');
         }
-        
+
         // BaseTypes und OnboardingTypes für das Dropdown laden
         $baseTypes = $entityManager->getRepository(BaseType::class)->findAll();
         $onboardingTypes = $entityManager->getRepository(OnboardingType::class)->findAll();
-        
+
         return $this->render('admin/task_block_edit.html.twig', [
             'taskBlock' => $taskBlock,
             'baseTypes' => $baseTypes,
-            'onboardingTypes' => $onboardingTypes
+            'onboardingTypes' => $onboardingTypes,
         ]);
     }
 
@@ -287,8 +351,9 @@ class AdminController extends AbstractController
     {
         $entityManager->remove($taskBlock);
         $entityManager->flush();
-        
+
         $this->addFlash('success', 'TaskBlock wurde erfolgreich gelöscht.');
+
         return $this->redirectToRoute('app_admin_task_blocks');
     }
 
@@ -296,7 +361,7 @@ class AdminController extends AbstractController
     public function taskBlockTasks(TaskBlock $taskBlock, EntityManagerInterface $entityManager): Response
     {
         return $this->render('admin/task_block_tasks.html.twig', [
-            'taskBlock' => $taskBlock
+            'taskBlock' => $taskBlock,
         ]);
     }
 
@@ -307,29 +372,29 @@ class AdminController extends AbstractController
             $task = new Task();
             $task->setTitle($request->request->get('title'));
             $task->setDescription($request->request->get('description'));
-            $task->setSortOrder((int)$request->request->get('sortOrder') ?: 0);
+            $task->setSortOrder((int) $request->request->get('sortOrder') ?: 0);
             $task->setTaskBlock($taskBlock);
-            
+
             // Fälligkeit konfigurieren
             $dueDateType = $request->request->get('dueDateType');
-            if ($dueDateType === 'fixed') {
+            if ('fixed' === $dueDateType) {
                 $dueDate = $request->request->get('dueDate');
                 if ($dueDate) {
                     $task->setDueDate(new \DateTimeImmutable($dueDate));
                 }
-            } elseif ($dueDateType === 'relative') {
+            } elseif ('relative' === $dueDateType) {
                 $dueDays = $request->request->get('dueDaysFromEntry');
-                if ($dueDays !== null && $dueDays !== '') {
-                    $task->setDueDaysFromEntry((int)$dueDays);
+                if (null !== $dueDays && '' !== $dueDays) {
+                    $task->setDueDaysFromEntry((int) $dueDays);
                 }
             }
-            
+
             // Zuständigkeit
             $assignedEmail = $request->request->get('assignedEmail');
             if ($assignedEmail) {
                 $task->setAssignedEmail($assignedEmail);
             }
-            
+
             $assignedRoleId = $request->request->get('assignedRole');
             if ($assignedRoleId) {
                 $role = $entityManager->getRepository(Role::class)->find($assignedRoleId);
@@ -337,7 +402,7 @@ class AdminController extends AbstractController
                     $task->setAssignedRole($role);
                 }
             }
-            
+
             // E-Mail-Konfiguration
             $sendEmail = $request->request->get('sendEmail');
             if ($sendEmail) {
@@ -346,21 +411,22 @@ class AdminController extends AbstractController
             } else {
                 $task->setEmailTemplate(null);
             }
-            
+
             $entityManager->persist($task);
             $entityManager->flush();
-            
+
             $this->addFlash('success', 'Task wurde erfolgreich erstellt.');
+
             return $this->redirectToRoute('app_admin_task_block_tasks', ['id' => $taskBlock->getId()]);
         }
-        
+
         // Rollen für das Dropdown laden
         $roles = $entityManager->getRepository(Role::class)->findAll();
-        
+
         return $this->render('admin/task_form.html.twig', [
             'taskBlock' => $taskBlock,
             'roles' => $roles,
-            'task' => null
+            'task' => null,
         ]);
     }
 
@@ -374,36 +440,36 @@ class AdminController extends AbstractController
         if ($request->isMethod('POST')) {
             $task->setTitle($request->request->get('title'));
             $task->setDescription($request->request->get('description'));
-            $task->setSortOrder((int)$request->request->get('sortOrder') ?: 0);
-            
+            $task->setSortOrder((int) $request->request->get('sortOrder') ?: 0);
+
             // Fälligkeit konfigurieren
             $dueDateType = $request->request->get('dueDateType');
-            if ($dueDateType === 'fixed') {
+            if ('fixed' === $dueDateType) {
                 $dueDate = $request->request->get('dueDate');
                 if ($dueDate) {
                     $task->setDueDate(new \DateTimeImmutable($dueDate));
                     $task->setDueDaysFromEntry(null);
                 }
-            } elseif ($dueDateType === 'relative') {
+            } elseif ('relative' === $dueDateType) {
                 $dueDays = $request->request->get('dueDaysFromEntry');
-                if ($dueDays !== null && $dueDays !== '') {
-                    $task->setDueDaysFromEntry((int)$dueDays);
+                if (null !== $dueDays && '' !== $dueDays) {
+                    $task->setDueDaysFromEntry((int) $dueDays);
                     $task->setDueDate(null);
                 }
             } else {
                 $task->setDueDate(null);
                 $task->setDueDaysFromEntry(null);
             }
-            
+
             // Zuständigkeit zurücksetzen
             $task->setAssignedEmail(null);
             $task->setAssignedRole(null);
-            
+
             $assignedEmail = $request->request->get('assignedEmail');
             if ($assignedEmail) {
                 $task->setAssignedEmail($assignedEmail);
             }
-            
+
             $assignedRoleId = $request->request->get('assignedRole');
             if ($assignedRoleId) {
                 $role = $entityManager->getRepository(Role::class)->find($assignedRoleId);
@@ -411,7 +477,7 @@ class AdminController extends AbstractController
                     $task->setAssignedRole($role);
                 }
             }
-            
+
             // E-Mail-Konfiguration
             $sendEmail = $request->request->get('sendEmail');
             if ($sendEmail) {
@@ -419,20 +485,21 @@ class AdminController extends AbstractController
             } else {
                 $task->setEmailTemplate(null);
             }
-            
+
             $entityManager->flush();
-            
+
             $this->addFlash('success', 'Task wurde erfolgreich aktualisiert.');
+
             return $this->redirectToRoute('app_admin_task_block_tasks', ['id' => $taskBlock->getId()]);
         }
-        
+
         // Rollen für das Dropdown laden
         $roles = $entityManager->getRepository(Role::class)->findAll();
-        
+
         return $this->render('admin/task_form.html.twig', [
             'taskBlock' => $taskBlock,
             'roles' => $roles,
-            'task' => $task
+            'task' => $task,
         ]);
     }
 
@@ -443,11 +510,12 @@ class AdminController extends AbstractController
         if (!$task || $task->getTaskBlock()->getId() !== $taskBlock->getId()) {
             throw $this->createNotFoundException('Task not found');
         }
-        
+
         $entityManager->remove($task);
         $entityManager->flush();
-        
+
         $this->addFlash('success', 'Task wurde erfolgreich gelöscht.');
+
         return $this->redirectToRoute('app_admin_task_block_tasks', ['id' => $taskBlock->getId()]);
     }
 }

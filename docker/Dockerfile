@@ -20,6 +20,10 @@ RUN apk add --no-cache \
 # Composer installieren
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+# PHP CS Fixer installieren
+RUN curl -L https://cs.symfony.com/download/php-cs-fixer-v3.phar -o /usr/local/bin/php-cs-fixer \
+    && chmod +x /usr/local/bin/php-cs-fixer
+
 # Working directory setzen
 WORKDIR /var/www/html
 

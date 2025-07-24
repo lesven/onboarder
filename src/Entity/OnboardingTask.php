@@ -5,7 +5,6 @@ namespace App\Entity;
 use App\Repository\OnboardingTaskRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: OnboardingTaskRepository::class)]
@@ -117,6 +116,7 @@ class OnboardingTask
     public function setTitle(string $title): static
     {
         $this->title = $title;
+
         return $this;
     }
 
@@ -128,6 +128,7 @@ class OnboardingTask
     public function setDescription(?string $description): static
     {
         $this->description = $description;
+
         return $this;
     }
 
@@ -139,6 +140,7 @@ class OnboardingTask
     public function setSortOrder(int $sortOrder): static
     {
         $this->sortOrder = $sortOrder;
+
         return $this;
     }
 
@@ -150,6 +152,7 @@ class OnboardingTask
     public function setStatus(string $status): static
     {
         $this->status = $status;
+
         return $this;
     }
 
@@ -161,6 +164,7 @@ class OnboardingTask
     public function setDueDate(?\DateTimeImmutable $dueDate): static
     {
         $this->dueDate = $dueDate;
+
         return $this;
     }
 
@@ -172,6 +176,7 @@ class OnboardingTask
     public function setDueDaysFromEntry(?int $dueDaysFromEntry): static
     {
         $this->dueDaysFromEntry = $dueDaysFromEntry;
+
         return $this;
     }
 
@@ -183,6 +188,7 @@ class OnboardingTask
     public function setAssignedEmail(?string $assignedEmail): static
     {
         $this->assignedEmail = $assignedEmail;
+
         return $this;
     }
 
@@ -194,6 +200,7 @@ class OnboardingTask
     public function setSendEmail(bool $sendEmail): static
     {
         $this->sendEmail = $sendEmail;
+
         return $this;
     }
 
@@ -205,6 +212,7 @@ class OnboardingTask
     public function setEmailTemplate(?string $emailTemplate): static
     {
         $this->emailTemplate = $emailTemplate;
+
         return $this;
     }
 
@@ -216,6 +224,7 @@ class OnboardingTask
     public function setOnboarding(?Onboarding $onboarding): static
     {
         $this->onboarding = $onboarding;
+
         return $this;
     }
 
@@ -227,6 +236,7 @@ class OnboardingTask
     public function setAssignedRole(?Role $assignedRole): static
     {
         $this->assignedRole = $assignedRole;
+
         return $this;
     }
 
@@ -238,6 +248,7 @@ class OnboardingTask
     public function setTemplateTask(?Task $templateTask): static
     {
         $this->templateTask = $templateTask;
+
         return $this;
     }
 
@@ -249,6 +260,7 @@ class OnboardingTask
     public function setTaskBlock(?TaskBlock $taskBlock): static
     {
         $this->taskBlock = $taskBlock;
+
         return $this;
     }
 
@@ -311,6 +323,7 @@ class OnboardingTask
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
@@ -322,6 +335,7 @@ class OnboardingTask
     public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
@@ -333,6 +347,7 @@ class OnboardingTask
     public function setCompletedAt(?\DateTimeImmutable $completedAt): static
     {
         $this->completedAt = $completedAt;
+
         return $this;
     }
 
@@ -344,11 +359,12 @@ class OnboardingTask
     public function setEmailSentAt(?\DateTimeImmutable $emailSentAt): static
     {
         $this->emailSentAt = $emailSentAt;
+
         return $this;
     }
 
     /**
-     * Berechnet das effektive Fälligkeitsdatum basierend auf Entry Date
+     * Berechnet das effektive Fälligkeitsdatum basierend auf Entry Date.
      */
     public function getEffectiveDueDate(): ?\DateTimeImmutable
     {
@@ -356,7 +372,7 @@ class OnboardingTask
             return $this->dueDate;
         }
 
-        if ($this->dueDaysFromEntry !== null && $this->onboarding) {
+        if (null !== $this->dueDaysFromEntry && $this->onboarding) {
             $entryDate = $this->onboarding->getEntryDate();
             if ($entryDate) {
                 return $entryDate->modify(sprintf('%+d days', $this->dueDaysFromEntry));
@@ -367,11 +383,11 @@ class OnboardingTask
     }
 
     /**
-     * Prüft ob die Task überfällig ist
+     * Prüft ob die Task überfällig ist.
      */
     public function isOverdue(): bool
     {
-        if ($this->status === self::STATUS_COMPLETED) {
+        if (self::STATUS_COMPLETED === $this->status) {
             return false;
         }
 
@@ -384,13 +400,14 @@ class OnboardingTask
     }
 
     /**
-     * Markiert die Task als abgeschlossen
+     * Markiert die Task als abgeschlossen.
      */
     public function markAsCompleted(): static
     {
         $this->status = self::STATUS_COMPLETED;
         $this->completedAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
+
         return $this;
     }
 }

@@ -5,7 +5,6 @@ namespace App\Entity;
 use App\Repository\OnboardingTypeRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: OnboardingTypeRepository::class)]
@@ -65,6 +64,7 @@ class OnboardingType
     public function setName(string $name): static
     {
         $this->name = $name;
+
         return $this;
     }
 
@@ -76,6 +76,7 @@ class OnboardingType
     public function setDescription(?string $description): static
     {
         $this->description = $description;
+
         return $this;
     }
 
@@ -87,6 +88,7 @@ class OnboardingType
     public function setBaseType(?BaseType $baseType): static
     {
         $this->baseType = $baseType;
+
         return $this;
     }
 
@@ -98,6 +100,7 @@ class OnboardingType
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
@@ -109,6 +112,7 @@ class OnboardingType
     public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 

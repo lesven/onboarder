@@ -5,7 +5,6 @@ namespace App\Entity;
 use App\Repository\TaskBlockRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: TaskBlockRepository::class)]
@@ -66,6 +65,7 @@ class TaskBlock
     public function setName(string $name): static
     {
         $this->name = $name;
+
         return $this;
     }
 
@@ -77,6 +77,7 @@ class TaskBlock
     public function setDescription(?string $description): static
     {
         $this->description = $description;
+
         return $this;
     }
 
@@ -88,6 +89,7 @@ class TaskBlock
     public function setSortOrder(int $sortOrder): static
     {
         $this->sortOrder = $sortOrder;
+
         return $this;
     }
 
@@ -99,6 +101,7 @@ class TaskBlock
     public function setBaseType(?BaseType $baseType): static
     {
         $this->baseType = $baseType;
+
         return $this;
     }
 
@@ -110,6 +113,7 @@ class TaskBlock
     public function setOnboardingType(?OnboardingType $onboardingType): static
     {
         $this->onboardingType = $onboardingType;
+
         return $this;
     }
 
@@ -151,6 +155,7 @@ class TaskBlock
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
@@ -162,6 +167,7 @@ class TaskBlock
     public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
