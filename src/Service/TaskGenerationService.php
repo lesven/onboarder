@@ -103,10 +103,18 @@ class TaskGenerationService
         if (null !== $templateTask->getDueDaysFromEntry()) {
             $days = $templateTask->getDueDaysFromEntry();
             if ($entryDate) {
-                $task->setDueDate((clone $entryDate)->modify(sprintf('%+d days', $days)));
+                $task->setDueDate($this->calculateDueDate($entryDate, $days));
             }
             $task->setDueDaysFromEntry($days);
         }
+    }
+
+    /**
+     * Berechnet das Fälligkeitsdatum basierend auf dem Eintrittsdatum und der Anzahl der Tage.
+     */
+    private function calculateDueDate(\DateTimeImmutable $entryDate, int $days): \DateTimeImmutable
+    {
+        return (clone $entryDate)->modify(sprintf('%+d days', $days));
     }
 
     /**
