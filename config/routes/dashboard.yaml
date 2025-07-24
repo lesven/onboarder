@@ -1,0 +1,4 @@
+# Dashboard Statistics (schlanker DashboardController nur für Hauptseite)
+dashboard:
+    resource: ../../src/Controller/DashboardController.php
+    type: attribute

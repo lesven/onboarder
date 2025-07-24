@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Entity\OnboardingTask;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
 
 /**
  * Verantwortlich für das Abfragen und Filtern von OnboardingTasks.

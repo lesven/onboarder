@@ -12,9 +12,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 /**
- * Schlanker Dashboard-Controller nur für die Hauptseite und Admin-Redirect.
+ * Controller für das Haupt-Dashboard mit Statistiken und Übersichten.
  */
-class DashboardController extends AbstractController
+class DashboardStatisticsController extends AbstractController
 {
     #[Route('/', name: 'app_dashboard')]
     public function index(EntityManagerInterface $entityManager): Response
@@ -34,12 +34,6 @@ class DashboardController extends AbstractController
             'stats' => $stats,
             'overdueTasks' => $overdueTasks,
         ]);
-    }
-
-    #[Route('/admin', name: 'app_admin')]
-    public function adminRedirect(): Response
-    {
-        return $this->redirectToRoute('app_admin_dashboard');
     }
 
     /**

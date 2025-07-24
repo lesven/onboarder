@@ -1,0 +1,4 @@
+# Onboarding CRUD Operations
+onboarding:
+    resource: ../../src/Controller/OnboardingController.php
+    type: attribute
