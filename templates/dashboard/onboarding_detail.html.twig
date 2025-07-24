@@ -1,0 +1,194 @@
+{% extends 'base_clean.html.twig' %}
+
+{% block title %}{{ onboarding.fullName }} - Onboarding Details - {{ parent() }}{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1><i class="bi bi-person me-2"></i>{{ onboarding.fullName }}</h1>
+        <p class="text-muted mb-0">Onboarding Details</p>
+    </div>
+    <a href="{{ path('app_onboardings') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Zurück zur Übersicht
+    </a>
+</div>
+
+<div class="row">
+    <!-- Mitarbeiter-Informationen -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-person-fill me-2"></i>Mitarbeiter-Daten</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <td><strong>Name:</strong></td>
+                        <td>{{ onboarding.fullName }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Position:</strong></td>
+                        <td>{{ onboarding.position ?? 'Nicht angegeben' }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Team:</strong></td>
+                        <td>{{ onboarding.team ?? 'Kein Team' }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Eintrittsdatum:</strong></td>
+                        <td>{{ onboarding.entryDate|date('d.m.Y') }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Manager:</strong></td>
+                        <td>{{ onboarding.manager ?? 'Nicht angegeben' }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Buddy:</strong></td>
+                        <td>{{ onboarding.buddy ?? 'Nicht angegeben' }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Onboarding-Typ:</strong></td>
+                        <td>
+                            {% if onboarding.onboardingType %}
+                                <span class="badge bg-info">{{ onboarding.onboardingType.name }}</span>
+                            {% else %}
+                                <span class="text-muted">Kein Typ zugewiesen</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Erstellt:</strong></td>
+                        <td>{{ onboarding.createdAt|date('d.m.Y H:i') }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Aufgaben-Übersicht -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-list-task me-2"></i>Onboarding-Aufgaben</h5>
+            </div>
+            <div class="card-body">
+                {% if tasks|length > 0 %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Aufgabe</th>
+                                    <th>Status</th>
+                                    <th>Fälligkeitsdatum</th>
+                                    <th>Zugewiesen an</th>
+                                    <th>Task Block</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for task in tasks %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ task.title }}</strong>
+                                            {% if task.description %}
+                                                <br><small class="text-muted">{{ task.description|slice(0, 100) }}{% if task.description|length > 100 %}...{% endif %}</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if task.status == 'pending' %}
+                                                <span class="badge bg-warning">Ausstehend</span>
+                                            {% elseif task.status == 'in_progress' %}
+                                                <span class="badge bg-info">In Bearbeitung</span>
+                                            {% elseif task.status == 'completed' %}
+                                                <span class="badge bg-success">Abgeschlossen</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">{{ task.status|capitalize }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if task.dueDate %}
+                                                {% if task.dueDate < date() and task.status != 'completed' %}
+                                                    <span class="text-danger">
+                                                        <i class="bi bi-exclamation-triangle me-1"></i>{{ task.dueDate|date('d.m.Y') }}
+                                                    </span>
+                                                {% else %}
+                                                    {{ task.dueDate|date('d.m.Y') }}
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="text-muted">Kein Datum</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if task.assignedRole %}
+                                                <span class="badge bg-secondary">{{ task.assignedRole.name }}</span>
+                                            {% elseif task.assigneeEmail %}
+                                                {{ task.assigneeEmail }}
+                                            {% else %}
+                                                <span class="text-muted">Nicht zugewiesen</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if task.taskBlock %}
+                                                <span class="badge bg-light text-dark">{{ task.taskBlock.name }}</span>
+                                            {% else %}
+                                                <span class="text-muted">Kein Block</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-list-task display-1 text-muted"></i>
+                        <h4 class="mt-3">Keine Aufgaben gefunden</h4>
+                        <p class="text-muted">Für dieses Onboarding wurden noch keine Aufgaben erstellt.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Aufgaben-Statistiken -->
+{% if tasks|length > 0 %}
+    {% set completedTasks = tasks|filter(task => task.status == 'completed')|length %}
+    {% set pendingTasks = tasks|filter(task => task.status == 'pending')|length %}
+    {% set inProgressTasks = tasks|filter(task => task.status == 'in_progress')|length %}
+    
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h3>{{ completedTasks }}</h3>
+                    <p class="mb-0">Abgeschlossen</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h3>{{ inProgressTasks }}</h3>
+                    <p class="mb-0">In Bearbeitung</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <h3>{{ pendingTasks }}</h3>
+                    <p class="mb-0">Ausstehend</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h3>{{ tasks|length }}</h3>
+                    <p class="mb-0">Gesamt</p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

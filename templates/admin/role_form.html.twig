@@ -1,0 +1,89 @@
+{% extends 'base_clean.html.twig' %}
+
+{% block title %}Neue Rolle - Administration - {{ parent() }}{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1><i class="bi bi-person-badge me-2"></i>Neue Rolle</h1>
+        <p class="text-muted mb-0">Erstellen Sie eine neue Rolle für Aufgaben-Zuweisungen</p>
+    </div>
+    <a href="{{ path('app_admin_roles') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Zurück zur Übersicht
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Rollen Details</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                
+                <div class="mb-3">
+                    <label for="name" class="form-label">Rollenname</label>
+                    <input type="text" class="form-control" id="name" name="name" placeholder="Geben Sie den Namen der Rolle ein..." required>
+                    <div class="form-text">
+                        Der Name der Rolle, z.B. "HR Manager", "IT Administrator" oder "Teamleiter"
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="email" class="form-label">E-Mail-Adresse</label>
+                    <input type="email" class="form-control" id="email" name="email" placeholder="name@firma.de" required>
+                    <div class="form-text">
+                        Die E-Mail-Adresse an die Aufgaben-Benachrichtigungen gesendet werden
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="description" class="form-label">Beschreibung</label>
+                    <textarea class="form-control" id="description" name="description" rows="3" placeholder="Beschreiben Sie die Verantwortlichkeiten dieser Rolle..."></textarea>
+                    <div class="form-text">
+                        Eine Beschreibung der Rolle und ihrer Aufgaben (optional)
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle me-1"></i>Rolle erstellen
+                    </button>
+                    <a href="{{ path('app_admin_roles') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle me-1"></i>Abbrechen
+                    </a>
+                </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card bg-light">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-info-circle me-1"></i>Hinweise</h6>
+            </div>
+            <div class="card-body">
+                <h6>Was sind Rollen?</h6>
+                <p class="small">Rollen definieren Verantwortlichkeiten und E-Mail-Adressen für die Aufgaben-Zuweisung im Onboarding-Prozess.</p>
+                
+                <h6>Verwendung</h6>
+                <ul class="small">
+                    <li>Aufgaben können Rollen statt direkten E-Mail-Adressen zugewiesen werden</li>
+                    <li>E-Mail-Benachrichtigungen werden an die Rollen-E-Mail gesendet</li>
+                    <li>Zentrale Verwaltung von Verantwortlichkeiten</li>
+                </ul>
+
+                <h6>Beispiele</h6>
+                <ul class="small">
+                    <li><strong>HR Manager:</strong> hr@firma.de</li>
+                    <li><strong>IT Support:</strong> it-support@firma.de</li>
+                    <li><strong>Teamleiter:</strong> teamleiter@firma.de</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

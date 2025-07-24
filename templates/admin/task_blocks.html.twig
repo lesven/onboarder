@@ -1,0 +1,93 @@
+{% extends 'base_clean.html.twig' %}
+
+{% block title %}Task Blocks - Administration - {{ parent() }}{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1><i class="bi bi-grid-3x3-gap me-2"></i>Task Blocks</h1>
+        <p class="text-muted mb-0">Verwalten Sie thematische Aufgaben-Gruppen</p>
+    </div>
+    <a href="#" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i>Neuer Task Block
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if taskBlocks|length > 0 %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>BaseType</th>
+                            <th>Beschreibung</th>
+                            <th>Aufgaben</th>
+                            <th>Reihenfolge</th>
+                            <th>Erstellt</th>
+                            <th>Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for taskBlock in taskBlocks %}
+                            <tr>
+                                <td><span class="badge bg-secondary">#{{ taskBlock.id }}</span></td>
+                                <td>
+                                    <strong>{{ taskBlock.name }}</strong>
+                                </td>
+                                <td>
+                                    {% if taskBlock.baseType %}
+                                        <span class="badge bg-info">{{ taskBlock.baseType.name }}</span>
+                                    {% else %}
+                                        <span class="text-muted">Kein BaseType</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="text-muted">{{ taskBlock.description|slice(0, 60) }}{% if taskBlock.description|length > 60 %}...{% endif %}</span>
+                                </td>
+                                <td>
+                                    {% if taskBlock.tasks|length > 0 %}
+                                        <span class="badge bg-success">{{ taskBlock.tasks|length }} Aufgabe(n)</span>
+                                    {% else %}
+                                        <span class="text-muted">Keine Aufgaben</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark">{{ taskBlock.orderPosition ?? 0 }}</span>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ taskBlock.createdAt|date('d.m.Y H:i') }}</small>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="#" class="btn btn-outline-primary">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="#" class="btn btn-outline-warning">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a href="#" class="btn btn-outline-danger">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-grid-3x3-gap display-1 text-muted"></i>
+                <h4 class="mt-3">Keine Task Blocks gefunden</h4>
+                <p class="text-muted">Task Blocks gruppieren thematisch verwandte Aufgaben in Onboarding-Prozessen.</p>
+                <a href="#" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-1"></i>Ersten Task Block erstellen
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

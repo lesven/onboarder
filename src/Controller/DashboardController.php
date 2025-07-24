@@ -89,6 +89,18 @@ class DashboardController extends AbstractController
         ]);
     }
 
+    #[Route('/onboardings', name: 'app_onboardings')]
+    public function onboardings(EntityManagerInterface $entityManager): Response
+    {
+        // Alle Onboardings laden
+        $onboardings = $entityManager->getRepository(Onboarding::class)
+            ->findBy([], ['createdAt' => 'DESC']);
+
+        return $this->render('dashboard/onboardings.html.twig', [
+            'onboardings' => $onboardings,
+        ]);
+    }
+
     #[Route('/onboarding/{id}', name: 'app_onboarding_detail')]
     public function onboardingDetail(Onboarding $onboarding): Response
     {
@@ -115,5 +127,11 @@ class DashboardController extends AbstractController
         return $this->render('dashboard/tasks_overview.html.twig', [
             'tasks' => $tasks,
         ]);
+    }
+
+    #[Route('/admin', name: 'app_admin')]
+    public function adminRedirect(): Response
+    {
+        return $this->redirectToRoute('app_admin_dashboard');
     }
 }

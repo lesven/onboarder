@@ -1,0 +1,87 @@
+{% extends 'base_clean.html.twig' %}
+
+{% block title %}Onboardings - {{ parent() }}{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-people me-2"></i>Alle Onboardings</h1>
+    <a href="#" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i>Neues Onboarding
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if onboardings|length > 0 %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Position</th>
+                            <th>Team</th>
+                            <th>Eintrittsdatum</th>
+                            <th>Onboarding-Typ</th>
+                            <th>Erstellt</th>
+                            <th>Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for onboarding in onboardings %}
+                            <tr>
+                                <td>
+                                    <strong>{{ onboarding.fullName }}</strong>
+                                </td>
+                                <td>
+                                    <span class="text-muted">{{ onboarding.position ?? 'Nicht angegeben' }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ onboarding.team ?? 'Kein Team' }}</span>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ onboarding.entryDate|date('d.m.Y') }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">
+                                        {{ onboarding.onboardingType ? onboarding.onboardingType.name : 'Kein Typ' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ onboarding.createdAt|date('d.m.Y H:i') }}</small>
+                                </td>
+                                <td>
+                                    <a href="{{ path('app_onboarding_detail', {id: onboarding.id}) }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye me-1"></i>Details
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-person-plus display-1 text-muted"></i>
+                <h4 class="mt-3">Keine Onboardings gefunden</h4>
+                <p class="text-muted">Erstellen Sie das erste Onboarding für einen neuen Mitarbeiter.</p>
+                <a href="#" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-1"></i>Neues Onboarding erstellen
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if onboardings|length > 0 %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h6 class="mb-0">Gesamt: {{ onboardings|length }} Onboarding(s)</h6>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
