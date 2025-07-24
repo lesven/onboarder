@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\BaseType;
 use App\Entity\OnboardingType;
 use App\Entity\Role;
+use App\Entity\Task;
 use App\Entity\TaskBlock;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -170,5 +171,214 @@ class AdminController extends AbstractController
         return $this->render('admin/task_block_form.html.twig', [
             'baseTypes' => $baseTypes
         ]);
+    }
+
+    #[Route('/admin/task-blocks/{id}', name: 'app_admin_task_block_show', requirements: ['id' => '\d+'])]
+    public function showTaskBlock(TaskBlock $taskBlock): Response
+    {
+        return $this->render('admin/task_block_show.html.twig', [
+            'taskBlock' => $taskBlock
+        ]);
+    }
+
+    #[Route('/admin/task-blocks/{id}/edit', name: 'app_admin_task_block_edit', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
+    public function editTaskBlock(TaskBlock $taskBlock, Request $request, EntityManagerInterface $entityManager): Response
+    {
+        if ($request->isMethod('POST')) {
+            $taskBlock->setName($request->request->get('name'));
+            $taskBlock->setDescription($request->request->get('description'));
+            $taskBlock->setSortOrder((int)$request->request->get('sortOrder') ?: 0);
+            
+            // BaseType optional zuordnen
+            $baseTypeId = $request->request->get('baseType');
+            if ($baseTypeId) {
+                $baseType = $entityManager->getRepository(BaseType::class)->find($baseTypeId);
+                $taskBlock->setBaseType($baseType);
+            } else {
+                $taskBlock->setBaseType(null);
+            }
+            
+            $entityManager->flush();
+            
+            $this->addFlash('success', 'TaskBlock wurde erfolgreich aktualisiert.');
+            return $this->redirectToRoute('app_admin_task_blocks');
+        }
+        
+        // BaseTypes für das Dropdown laden
+        $baseTypes = $entityManager->getRepository(BaseType::class)->findAll();
+        
+        return $this->render('admin/task_block_edit.html.twig', [
+            'taskBlock' => $taskBlock,
+            'baseTypes' => $baseTypes
+        ]);
+    }
+
+    #[Route('/admin/task-blocks/{id}/delete', name: 'app_admin_task_block_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
+    public function deleteTaskBlock(TaskBlock $taskBlock, EntityManagerInterface $entityManager): Response
+    {
+        $entityManager->remove($taskBlock);
+        $entityManager->flush();
+        
+        $this->addFlash('success', 'TaskBlock wurde erfolgreich gelöscht.');
+        return $this->redirectToRoute('app_admin_task_blocks');
+    }
+
+    #[Route('/admin/task-blocks/{id}/tasks', name: 'app_admin_task_block_tasks', requirements: ['id' => '\d+'])]
+    public function taskBlockTasks(TaskBlock $taskBlock, EntityManagerInterface $entityManager): Response
+    {
+        return $this->render('admin/task_block_tasks.html.twig', [
+            'taskBlock' => $taskBlock
+        ]);
+    }
+
+    #[Route('/admin/task-blocks/{id}/tasks/new', name: 'app_admin_task_block_new_task', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
+    public function newTaskForBlock(TaskBlock $taskBlock, Request $request, EntityManagerInterface $entityManager): Response
+    {
+        if ($request->isMethod('POST')) {
+            $task = new Task();
+            $task->setTitle($request->request->get('title'));
+            $task->setDescription($request->request->get('description'));
+            $task->setSortOrder((int)$request->request->get('sortOrder') ?: 0);
+            $task->setTaskBlock($taskBlock);
+            
+            // Fälligkeit konfigurieren
+            $dueDateType = $request->request->get('dueDateType');
+            if ($dueDateType === 'fixed') {
+                $dueDate = $request->request->get('dueDate');
+                if ($dueDate) {
+                    $task->setDueDate(new \DateTimeImmutable($dueDate));
+                }
+            } elseif ($dueDateType === 'relative') {
+                $dueDays = $request->request->get('dueDaysFromEntry');
+                if ($dueDays !== null && $dueDays !== '') {
+                    $task->setDueDaysFromEntry((int)$dueDays);
+                }
+            }
+            
+            // Zuständigkeit
+            $assignedEmail = $request->request->get('assignedEmail');
+            if ($assignedEmail) {
+                $task->setAssignedEmail($assignedEmail);
+            }
+            
+            $assignedRoleId = $request->request->get('assignedRole');
+            if ($assignedRoleId) {
+                $role = $entityManager->getRepository(Role::class)->find($assignedRoleId);
+                if ($role) {
+                    $task->setAssignedRole($role);
+                }
+            }
+            
+            // E-Mail-Konfiguration
+            $sendEmail = $request->request->get('sendEmail');
+            if ($sendEmail) {
+                $task->setEmailTemplate($request->request->get('emailTemplate'));
+                // E-Mail wird zur Fälligkeit der Task versendet (kein separates Datum)
+            } else {
+                $task->setEmailTemplate(null);
+            }
+            
+            $entityManager->persist($task);
+            $entityManager->flush();
+            
+            $this->addFlash('success', 'Task wurde erfolgreich erstellt.');
+            return $this->redirectToRoute('app_admin_task_block_tasks', ['id' => $taskBlock->getId()]);
+        }
+        
+        // Rollen für das Dropdown laden
+        $roles = $entityManager->getRepository(Role::class)->findAll();
+        
+        return $this->render('admin/task_form.html.twig', [
+            'taskBlock' => $taskBlock,
+            'roles' => $roles,
+            'task' => null
+        ]);
+    }
+
+    #[Route('/admin/task-blocks/{id}/tasks/{taskId}/edit', name: 'app_admin_task_edit', requirements: ['id' => '\d+', 'taskId' => '\d+'], methods: ['GET', 'POST'])]
+    public function editTask(TaskBlock $taskBlock, int $taskId, Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $task = $entityManager->getRepository(Task::class)->find($taskId);
+        if (!$task || $task->getTaskBlock()->getId() !== $taskBlock->getId()) {
+            throw $this->createNotFoundException('Task not found');
+        }
+        if ($request->isMethod('POST')) {
+            $task->setTitle($request->request->get('title'));
+            $task->setDescription($request->request->get('description'));
+            $task->setSortOrder((int)$request->request->get('sortOrder') ?: 0);
+            
+            // Fälligkeit konfigurieren
+            $dueDateType = $request->request->get('dueDateType');
+            if ($dueDateType === 'fixed') {
+                $dueDate = $request->request->get('dueDate');
+                if ($dueDate) {
+                    $task->setDueDate(new \DateTimeImmutable($dueDate));
+                    $task->setDueDaysFromEntry(null);
+                }
+            } elseif ($dueDateType === 'relative') {
+                $dueDays = $request->request->get('dueDaysFromEntry');
+                if ($dueDays !== null && $dueDays !== '') {
+                    $task->setDueDaysFromEntry((int)$dueDays);
+                    $task->setDueDate(null);
+                }
+            } else {
+                $task->setDueDate(null);
+                $task->setDueDaysFromEntry(null);
+            }
+            
+            // Zuständigkeit zurücksetzen
+            $task->setAssignedEmail(null);
+            $task->setAssignedRole(null);
+            
+            $assignedEmail = $request->request->get('assignedEmail');
+            if ($assignedEmail) {
+                $task->setAssignedEmail($assignedEmail);
+            }
+            
+            $assignedRoleId = $request->request->get('assignedRole');
+            if ($assignedRoleId) {
+                $role = $entityManager->getRepository(Role::class)->find($assignedRoleId);
+                if ($role) {
+                    $task->setAssignedRole($role);
+                }
+            }
+            
+            // E-Mail-Konfiguration
+            $sendEmail = $request->request->get('sendEmail');
+            if ($sendEmail) {
+                $task->setEmailTemplate($request->request->get('emailTemplate'));
+            } else {
+                $task->setEmailTemplate(null);
+            }
+            
+            $entityManager->flush();
+            
+            $this->addFlash('success', 'Task wurde erfolgreich aktualisiert.');
+            return $this->redirectToRoute('app_admin_task_block_tasks', ['id' => $taskBlock->getId()]);
+        }
+        
+        // Rollen für das Dropdown laden
+        $roles = $entityManager->getRepository(Role::class)->findAll();
+        
+        return $this->render('admin/task_form.html.twig', [
+            'taskBlock' => $taskBlock,
+            'roles' => $roles,
+            'task' => $task
+        ]);
+    }
+
+    #[Route('/admin/task-blocks/{id}/tasks/{taskId}/delete', name: 'app_admin_task_delete', requirements: ['id' => '\d+', 'taskId' => '\d+'], methods: ['POST'])]
+    public function deleteTask(TaskBlock $taskBlock, int $taskId, EntityManagerInterface $entityManager): Response
+    {
+        $task = $entityManager->getRepository(Task::class)->find($taskId);
+        if (!$task || $task->getTaskBlock()->getId() !== $taskBlock->getId()) {
+            throw $this->createNotFoundException('Task not found');
+        }
+        
+        $entityManager->remove($task);
+        $entityManager->flush();
+        
+        $this->addFlash('success', 'Task wurde erfolgreich gelöscht.');
+        return $this->redirectToRoute('app_admin_task_block_tasks', ['id' => $taskBlock->getId()]);
     }
 }

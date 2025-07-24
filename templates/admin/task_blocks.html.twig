@@ -62,15 +62,20 @@
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <a href="#" class="btn btn-outline-primary">
+                                        <a href="{{ path('app_admin_task_block_show', {'id': taskBlock.id}) }}" class="btn btn-outline-primary" title="Anzeigen">
                                             <i class="bi bi-eye"></i>
                                         </a>
-                                        <a href="#" class="btn btn-outline-warning">
+                                        <a href="{{ path('app_admin_task_block_tasks', {'id': taskBlock.id}) }}" class="btn btn-outline-success" title="Tasks verwalten">
+                                            <i class="bi bi-list-task"></i>
+                                        </a>
+                                        <a href="{{ path('app_admin_task_block_edit', {'id': taskBlock.id}) }}" class="btn btn-outline-warning" title="Bearbeiten">
                                             <i class="bi bi-pencil"></i>
                                         </a>
-                                        <a href="#" class="btn btn-outline-danger">
-                                            <i class="bi bi-trash"></i>
-                                        </a>
+                                        <form method="post" action="{{ path('app_admin_task_block_delete', {'id': taskBlock.id}) }}" style="display: inline;" onsubmit="return confirm('Sind Sie sicher, dass Sie diesen TaskBlock löschen möchten?')">
+                                            <button type="submit" class="btn btn-outline-danger" title="Löschen">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>

@@ -1,0 +1,115 @@
+{% extends 'base_clean.html.twig' %}
+
+{% block title %}Tasks in {{ taskBlock.name }}{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1><i class="bi bi-list-task me-2"></i>Tasks in "{{ taskBlock.name }}"</h1>
+        <p class="text-muted mb-0">Aufgaben für diesen TaskBlock verwalten</p>
+    </div>
+    <div>
+        <a href="{{ path('app_admin_task_block_new_task', {'id': taskBlock.id}) }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>Neue Task
+        </a>
+        <a href="{{ path('app_admin_task_blocks') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Zurück zu TaskBlocks
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if taskBlock.tasks|length > 0 %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Titel</th>
+                            <th>Beschreibung</th>
+                            <th>Fälligkeit</th>
+                            <th>Zuständigkeit</th>
+                            <th>E-Mail</th>
+                            <th>Reihenfolge</th>
+                            <th>Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for task in taskBlock.tasks|sort((a, b) => a.sortOrder <=> b.sortOrder) %}
+                            <tr>
+                                <td>
+                                    <strong>{{ task.title }}</strong>
+                                </td>
+                                <td>
+                                    <span class="text-muted">{{ task.description|slice(0, 50) }}{% if task.description|length > 50 %}...{% endif %}</span>
+                                </td>
+                                <td>
+                                    {% if task.dueDate %}
+                                        <span class="badge bg-info">{{ task.dueDate.format('d.m.Y') }}</span>
+                                        <small class="text-muted d-block">Festes Datum</small>
+                                    {% elseif task.dueDaysFromEntry is not null %}
+                                        {% if task.dueDaysFromEntry < 0 %}
+                                            <span class="badge bg-danger">{{ task.dueDaysFromEntry * -1 }} Tage vor Eintritt</span>
+                                        {% elseif task.dueDaysFromEntry > 0 %}
+                                            <span class="badge bg-warning">{{ task.dueDaysFromEntry }} Tage nach Eintritt</span>
+                                        {% else %}
+                                            <span class="badge bg-success">Am Eintrittsdatum</span>
+                                        {% endif %}
+                                        <small class="text-muted d-block">Relativ zum Eintritt</small>
+                                    {% else %}
+                                        <span class="text-muted">Kein Fälligkeitsdatum</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if task.assignedRole %}
+                                        <span class="badge bg-primary">{{ task.assignedRole.name }}</span>
+                                    {% elseif task.assignedEmail %}
+                                        <span class="badge bg-secondary">{{ task.assignedEmail }}</span>
+                                    {% else %}
+                                        <span class="text-muted">Nicht zugeordnet</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if task.emailTemplate %}
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-envelope-check"></i> Aktiviert
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">
+                                            <i class="bi bi-envelope-slash"></i> Deaktiviert
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ task.sortOrder }}</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{{ path('app_admin_task_edit', {'id': taskBlock.id, 'taskId': task.id}) }}" class="btn btn-outline-warning" title="Bearbeiten">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <form method="post" action="{{ path('app_admin_task_delete', {'id': taskBlock.id, 'taskId': task.id}) }}" style="display: inline;" onsubmit="return confirm('Sind Sie sicher, dass Sie diese Task löschen möchten?')">
+                                            <button type="submit" class="btn btn-outline-danger" title="Löschen">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-list-task display-1 text-muted"></i>
+                <h4 class="mt-3">Keine Tasks gefunden</h4>
+                <p class="text-muted">Tasks sind individuelle Aufgaben innerhalb eines TaskBlocks.</p>
+                <a href="{{ path('app_admin_task_block_new_task', {'id': taskBlock.id}) }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-1"></i>Erste Task erstellen
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

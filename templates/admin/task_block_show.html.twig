@@ -1,0 +1,98 @@
+{% extends 'base_clean.html.twig' %}
+
+{% block title %}TaskBlock: {{ taskBlock.name }}{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1><i class="bi bi-grid-3x3-gap me-2"></i>{{ taskBlock.name }}</h1>
+            <p class="text-muted mb-0">TaskBlock Details</p>
+        </div>
+        <div>
+            <a href="{{ path('app_admin_task_block_tasks', {'id': taskBlock.id}) }}" class="btn btn-success">
+                <i class="bi bi-list-task me-1"></i>Tasks verwalten
+            </a>
+            <a href="{{ path('app_admin_task_block_edit', {'id': taskBlock.id}) }}" class="btn btn-warning">
+                <i class="bi bi-pencil me-1"></i>Bearbeiten
+            </a>
+            <a href="{{ path('app_admin_task_blocks') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Zurück
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Informationen</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-3">ID:</dt>
+                        <dd class="col-sm-9"><span class="badge bg-secondary">#{{ taskBlock.id }}</span></dd>
+                        
+                        <dt class="col-sm-3">Name:</dt>
+                        <dd class="col-sm-9">{{ taskBlock.name }}</dd>
+                        
+                        <dt class="col-sm-3">Beschreibung:</dt>
+                        <dd class="col-sm-9">
+                            {% if taskBlock.description %}
+                                {{ taskBlock.description|nl2br }}
+                            {% else %}
+                                <span class="text-muted">Keine Beschreibung</span>
+                            {% endif %}
+                        </dd>
+                        
+                        <dt class="col-sm-3">Reihenfolge:</dt>
+                        <dd class="col-sm-9">{{ taskBlock.sortOrder }}</dd>
+                        
+                        <dt class="col-sm-3">BaseType:</dt>
+                        <dd class="col-sm-9">
+                            {% if taskBlock.baseType %}
+                                <span class="badge bg-info">{{ taskBlock.baseType.name }}</span>
+                            {% else %}
+                                <span class="text-muted">Kein BaseType zugeordnet</span>
+                            {% endif %}
+                        </dd>
+                        
+                        <dt class="col-sm-3">Erstellt:</dt>
+                        <dd class="col-sm-9">{{ taskBlock.createdAt|date('d.m.Y H:i:s') }}</dd>
+                        
+                        <dt class="col-sm-3">Aktualisiert:</dt>
+                        <dd class="col-sm-9">{{ taskBlock.updatedAt|date('d.m.Y H:i:s') }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Zugeordnete Tasks</h5>
+                </div>
+                <div class="card-body">
+                    {% if taskBlock.tasks|length > 0 %}
+                        <div class="list-group list-group-flush">
+                            {% for task in taskBlock.tasks %}
+                                <div class="list-group-item px-0">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="mb-1">{{ task.title }}</h6>
+                                            <small class="text-muted">{{ task.description|slice(0, 50) }}...</small>
+                                        </div>
+                                        <small class="text-muted">#{{ task.sortOrder }}</small>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">Keine Tasks zugeordnet</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
