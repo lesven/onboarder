@@ -312,17 +312,15 @@ class AdminController extends AbstractController
             
             // Fälligkeit konfigurieren
             $dueDateType = $request->request->get('dueDateType');
-            if ($dueDateType === 'fixed') {
-                $dueDate = $request->request->get('dueDate');
-                if ($dueDate) {
-                    $task->setDueDate(new \DateTimeImmutable($dueDate));
-                }
-            } elseif ($dueDateType === 'relative') {
+            if ($dueDateType === 'relative') {
                 $dueDays = $request->request->get('dueDaysFromEntry');
                 if ($dueDays !== null && $dueDays !== '') {
                     $task->setDueDaysFromEntry((int)$dueDays);
                 }
+            } else {
+                $task->setDueDaysFromEntry(null);
             }
+            $task->setDueDate(null);
             
             // Zuständigkeit
             $assignedEmail = $request->request->get('assignedEmail');
@@ -378,22 +376,17 @@ class AdminController extends AbstractController
             
             // Fälligkeit konfigurieren
             $dueDateType = $request->request->get('dueDateType');
-            if ($dueDateType === 'fixed') {
-                $dueDate = $request->request->get('dueDate');
-                if ($dueDate) {
-                    $task->setDueDate(new \DateTimeImmutable($dueDate));
-                    $task->setDueDaysFromEntry(null);
-                }
-            } elseif ($dueDateType === 'relative') {
+            if ($dueDateType === 'relative') {
                 $dueDays = $request->request->get('dueDaysFromEntry');
                 if ($dueDays !== null && $dueDays !== '') {
                     $task->setDueDaysFromEntry((int)$dueDays);
-                    $task->setDueDate(null);
+                } else {
+                    $task->setDueDaysFromEntry(null);
                 }
             } else {
-                $task->setDueDate(null);
                 $task->setDueDaysFromEntry(null);
             }
+            $task->setDueDate(null);
             
             // Zuständigkeit zurücksetzen
             $task->setAssignedEmail(null);
