@@ -8,6 +8,22 @@ use App\Entity\TaskBlock;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 
+/**
+ * Service class responsible for managing Task entities.
+ *
+ * This class provides methods to create, update, and populate Task objects
+ * based on data from HTTP requests. It interacts with the database via the
+ * EntityManagerInterface to persist and retrieve related entities such as Role.
+ *
+ * Responsibilities:
+ * - Create new Task entities and associate them with TaskBlock.
+ * - Update existing Task entities with new data.
+ * - Populate Task entities with data from HTTP requests, including handling
+ *   due dates, assignments, and email templates.
+ *
+ * Dependencies:
+ * - EntityManagerInterface: Used for database operations.
+ */
 class TaskService
 {
     public function __construct(private readonly EntityManagerInterface $entityManager)
