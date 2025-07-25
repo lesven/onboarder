@@ -213,7 +213,8 @@ class OnboardingAdminController extends AbstractController
 
         $response = new Response($content);
         $response->headers->set('Content-Type', 'text/html');
-        $response->headers->set('Content-Disposition', 'attachment; filename="email-template-' . $task->getId() . '.html"');
+        $sanitizedTaskId = filter_var($task->getId(), FILTER_SANITIZE_NUMBER_INT);
+        $response->headers->set('Content-Disposition', 'attachment; filename="email-template-' . $sanitizedTaskId . '.html"');
 
         return $response;
     }
