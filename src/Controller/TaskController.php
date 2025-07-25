@@ -18,6 +18,7 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/tasks')]
 class TaskController extends AbstractController
 {
+    private const COOKIE_EXPIRATION_PERIOD = '+1 year';
     private const COOKIE_STATUS = 'tasks_status';
     private const COOKIE_EMPLOYEE = 'tasks_employee';
     private const COOKIE_ASSIGNEE = 'tasks_assignee';
@@ -45,7 +46,7 @@ class TaskController extends AbstractController
             $statusFilter ??= $request->cookies->get('tasks_status', '');
             $employeeFilter ??= $request->cookies->get('tasks_employee', '');
             $assigneeFilter ??= $request->cookies->get('tasks_assignee', '');
-            $cookieExpires = strtotime('+1 year');
+            $cookieExpires = strtotime(self::COOKIE_EXPIRATION_PERIOD);
         }
 
         $tasks = $this->taskService->getFilteredTasks($statusFilter, $employeeFilter, $assigneeFilter);
