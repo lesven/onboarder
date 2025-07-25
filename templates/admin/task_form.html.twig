@@ -7,7 +7,7 @@
     <h1>{% if task %}Task bearbeiten{% else %}Neue Task erstellen{% endif %}</h1>
     <p class="text-muted">TaskBlock: {{ taskBlock.name }}</p>
     
-    <form method="post">
+    <form method="post" enctype="multipart/form-data">
         <div class="row">
             <div class="col-md-8">
                 <!-- Grunddaten -->
@@ -127,9 +127,19 @@
                         </div>
                         
                         <div class="mb-3" id="emailTemplateGroup" style="display: none;">
-                            <label for="emailTemplate" class="form-label">E-Mail-Template</label>
+                            <label for="emailTemplateFile" class="form-label">HTML-Datei hochladen</label>
+                            <input class="form-control" type="file" id="emailTemplateFile" name="emailTemplateFile" accept=".html,text/html">
+                            <div class="form-text">Optional kann das Template als Datei hochgeladen werden.</div>
+
+                            <label for="emailTemplate" class="form-label mt-3">E-Mail-Template</label>
                             <textarea class="form-control" id="emailTemplate" name="emailTemplate" rows="4" placeholder="HTML-Template für die E-Mail...">{{ task ? task.emailTemplate : '' }}</textarea>
                             <div class="form-text">Verwenden Sie Variablen wie {{ '{{firstName}}' }}, {{ '{{lastName}}' }}, {{ '{{entryDate}}' }}, {{ '{{manager}}' }}, {{ '{{buddy}}' }}.</div>
+
+                            {% if task and task.emailTemplate %}
+                                <a href="{{ path('app_admin_task_download_template', {'id': taskBlock.id, 'taskId': task.id}) }}" class="btn btn-outline-secondary btn-sm mt-2">
+                                    <i class="bi bi-download"></i> Aktuelles Template herunterladen
+                                </a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
