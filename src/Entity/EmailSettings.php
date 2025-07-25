@@ -16,6 +16,9 @@ class EmailSettings
     #[ORM\Column(length: 255)]
     private ?string $smtpHost = null;
 
+    #[ORM\Column]
+    private ?int $smtpPort = null;
+
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $smtpUsername = null;
 
@@ -50,6 +53,18 @@ class EmailSettings
     public function setSmtpHost(string $smtpHost): static
     {
         $this->smtpHost = $smtpHost;
+
+        return $this;
+    }
+
+    public function getSmtpPort(): ?int
+    {
+        return $this->smtpPort;
+    }
+
+    public function setSmtpPort(?int $smtpPort): static
+    {
+        $this->smtpPort = $smtpPort;
 
         return $this;
     }

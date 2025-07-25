@@ -10,6 +10,11 @@
         <input type="text" class="form-control" id="smtpHost" name="smtpHost" value="{{ settings.smtpHost }}" required>
     </div>
     <div class="mb-3">
+        <label for="smtpPort" class="form-label">SMTP Port</label>
+        <input type="number" class="form-control" id="smtpPort" name="smtpPort" value="{{ settings.smtpPort ?? 587 }}" min="1" max="65535" required>
+        <div class="form-text">Häufige Ports: 25 (unverschlüsselt), 587 (STARTTLS), 465 (SSL/TLS)</div>
+    </div>
+    <div class="mb-3">
         <label for="smtpUsername" class="form-label">SMTP Username</label>
         <input type="text" class="form-control" id="smtpUsername" name="smtpUsername" value="{{ settings.smtpUsername }}">
     </div>
