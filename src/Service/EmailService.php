@@ -7,12 +7,14 @@ use App\Entity\OnboardingTask;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Mailer\Transport;
 use Symfony\Component\Mime\Email;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class EmailService
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
-        private readonly PasswordEncryptionService $encryptionService
+        private readonly PasswordEncryptionService $encryptionService,
+        private readonly UrlGeneratorInterface $urlGenerator
     ) {
     }
 
@@ -46,7 +48,14 @@ class EmailService
             '{{onboardingId}}' => (string)($onboarding?->getId() ?? ''),
             '{{taskId}}'       => (string)($task->getId() ?? ''),
             '{{manager}}'      => $onboarding?->getManager() ?? '',
+            '{{managerEmail}}'      => $onboarding?->getManagerEmail() ?? '',
             '{{buddy}}'        => $onboarding?->getBuddy() ?? '',
+            '{{buddyEmail}}'  => $onboarding?->getBuddyEmail() ?? '',
+            '{{onboardingLink}}' => $onboarding ? $this->urlGenerator->generate(
+                'app_onboarding_detail',
+                ['id' => $onboarding->getId()],
+                UrlGeneratorInterface::ABSOLUTE_URL
+            ) : '',
         ];
 
         return strtr($template, $placeholders);

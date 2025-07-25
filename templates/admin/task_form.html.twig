@@ -133,7 +133,14 @@
 
                             <label for="emailTemplate" class="form-label mt-3">E-Mail-Template</label>
                             <textarea class="form-control" id="emailTemplate" name="emailTemplate" rows="4" placeholder="HTML-Template für die E-Mail...">{{ task ? task.emailTemplate : '' }}</textarea>
-                            <div class="form-text">Verwenden Sie Variablen wie {{ '{{firstName}}' }}, {{ '{{lastName}}' }}, {{ '{{entryDate}}' }}, {{ '{{manager}}' }}, {{ '{{buddy}}' }}.</div>
+                            <div class="form-text">Verwenden Sie Variablen wie: <br>
+                            <p>Hallo {{ '{{manager}}' }} mit der email {{ '{{managerEmail}}' }},<br>
+dein neuer kollege {{ '{{firstName}}' }} {{ '{{lastName}}' }} fängt am {{ '{{entryDate}}' }} bei euch an. <br>
+sein Buddy ist {{ '{{buddy}}' }} {{ '{{buddyEmail}}' }} und seine Onboarding Id lautet {{ '{{onboardingId}}' }}<br>
+Hier ist der link zum onboarding {{ '{{onboardingLink}}' }}
+</p>
+                            
+                            </div>
 
                             {% if task and task.emailTemplate %}
                                 <a href="{{ path('app_admin_task_download_template', {'id': taskBlock.id, 'taskId': task.id}) }}" class="btn btn-outline-secondary btn-sm mt-2">
