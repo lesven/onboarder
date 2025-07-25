@@ -9,57 +9,58 @@
     </div>
 </div>
 
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card bg-primary text-white">
+<h2 class="h4 mb-3">Übersicht</h2>
+<div class="row row-cols-2 row-cols-md-3 row-cols-xl-5 g-3 mb-4">
+    <div class="col">
+        <div class="card bg-primary text-white h-100">
             <div class="card-body text-center">
                 <i class="bi bi-diagram-3" style="font-size: 2rem;"></i>
-                <h3>{{ stats.baseTypes }}</h3>
-                <p>BaseTypes</p>
+                <h3 class="mt-2">{{ stats.baseTypes }}</h3>
+                <p class="mb-2">BaseTypes</p>
                 <a href="{{ path('app_admin_base_types') }}" class="btn btn-light btn-sm">Verwalten</a>
             </div>
         </div>
     </div>
-    
-    <div class="col-md-3">
-        <div class="card bg-success text-white">
+
+    <div class="col">
+        <div class="card bg-success text-white h-100">
             <div class="card-body text-center">
                 <i class="bi bi-collection" style="font-size: 2rem;"></i>
-                <h3>{{ stats.onboardingTypes }}</h3>
-                <p>OnboardingTypes</p>
+                <h3 class="mt-2">{{ stats.onboardingTypes }}</h3>
+                <p class="mb-2">OnboardingTypes</p>
                 <a href="{{ path('app_admin_onboarding_types') }}" class="btn btn-light btn-sm">Verwalten</a>
             </div>
         </div>
     </div>
-    
-    <div class="col-md-3">
-        <div class="card bg-warning text-white">
+
+    <div class="col">
+        <div class="card bg-warning text-white h-100">
             <div class="card-body text-center">
                 <i class="bi bi-person-badge" style="font-size: 2rem;"></i>
-                <h3>{{ stats.roles }}</h3>
-                <p>Rollen</p>
+                <h3 class="mt-2">{{ stats.roles }}</h3>
+                <p class="mb-2">Rollen</p>
                 <a href="{{ path('app_admin_roles') }}" class="btn btn-light btn-sm">Verwalten</a>
             </div>
         </div>
     </div>
-    
-    <div class="col-md-3">
-        <div class="card bg-info text-white">
+
+    <div class="col">
+        <div class="card bg-info text-white h-100">
             <div class="card-body text-center">
                 <i class="bi bi-card-list" style="font-size: 2rem;"></i>
-                <h3>{{ stats.taskBlocks }}</h3>
-                <p>TaskBlocks</p>
+                <h3 class="mt-2">{{ stats.taskBlocks }}</h3>
+                <p class="mb-2">TaskBlocks</p>
                 <a href="{{ path('app_admin_task_blocks') }}" class="btn btn-light btn-sm">Verwalten</a>
             </div>
         </div>
     </div>
 
-    <div class="col-md-3 mt-3 mt-md-0">
-        <div class="card bg-secondary text-white">
+    <div class="col">
+        <div class="card bg-secondary text-white h-100">
             <div class="card-body text-center">
                 <i class="bi bi-people" style="font-size: 2rem;"></i>
-                <h3>{{ stats.users }}</h3>
-                <p>Benutzer</p>
+                <h3 class="mt-2">{{ stats.users }}</h3>
+                <p class="mb-2">Benutzer</p>
                 <a href="{{ path('app_admin_users') }}" class="btn btn-light btn-sm">Verwalten</a>
             </div>
         </div>
@@ -68,9 +69,9 @@
 
 <div class="row">
     <div class="col-12">
-        <div class="card">
+        <div class="card shadow-sm">
             <div class="card-header">
-                <h5><i class="bi bi-list-ul"></i> Schnellaktionen</h5>
+                <h5 class="mb-0"><i class="bi bi-list-ul"></i> Schnellaktionen</h5>
             </div>
             <div class="card-body">
                 <div class="row">
