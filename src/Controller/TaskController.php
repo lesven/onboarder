@@ -3,8 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\OnboardingTask;
-use App\Service\OnboardingTaskFacade;
 use App\Service\AdminLookupService;
+use App\Service\OnboardingTaskFacade;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Cookie;
