@@ -87,4 +87,13 @@ class OnboardingTaskRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function findOneByCompletionToken(string $token): ?OnboardingTask
+    {
+        return $this->createQueryBuilder('ot')
+            ->where('ot.completionToken = :token')
+            ->setParameter('token', $token)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }

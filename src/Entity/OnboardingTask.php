@@ -49,6 +49,9 @@ class OnboardingTask
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $emailTemplate = null;
 
+    #[ORM\Column(length: 64, unique: true)]
+    private string $completionToken;
+
     // Beziehungen
     #[ORM\ManyToOne(targetEntity: Onboarding::class, inversedBy: 'onboardingTasks')]
     #[ORM\JoinColumn(nullable: false)]
@@ -99,6 +102,7 @@ class OnboardingTask
         $this->updatedAt = new \DateTimeImmutable();
         $this->dependencies = new ArrayCollection();
         $this->dependentTasks = new ArrayCollection();
+        $this->completionToken = bin2hex(random_bytes(16));
     }
 
     // Getter und Setter
@@ -371,6 +375,18 @@ class OnboardingTask
     public function setEmailSentAt(?\DateTimeImmutable $emailSentAt): static
     {
         $this->emailSentAt = $emailSentAt;
+
+        return $this;
+    }
+
+    public function getCompletionToken(): string
+    {
+        return $this->completionToken;
+    }
+
+    public function regenerateCompletionToken(): static
+    {
+        $this->completionToken = bin2hex(random_bytes(16));
 
         return $this;
     }

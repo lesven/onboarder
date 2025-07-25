@@ -15,9 +15,13 @@ class EmailServiceTest extends TestCase
     public function testRenderTemplateReplacesVariables(): void
     {
         $parameterBag = new ParameterBag(['kernel.secret' => 'test-secret-key']);
+        $urlGenerator = $this->createMock(\Symfony\Component\Routing\Generator\UrlGeneratorInterface::class);
+        $urlGenerator->method('generate')->willReturn('http://example.com');
+
         $service = new EmailService(
             $this->createMock(EntityManagerInterface::class),
-            new PasswordEncryptionService($parameterBag)
+            new PasswordEncryptionService($parameterBag),
+            $urlGenerator
         );
 
         $onboarding = new Onboarding();

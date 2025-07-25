@@ -56,6 +56,11 @@ class EmailService
                 ['id' => $onboarding->getId()],
                 UrlGeneratorInterface::ABSOLUTE_URL
             ) : '',
+            '{{taskCompleteLink}}' => $this->urlGenerator->generate(
+                'app_public_task_complete',
+                ['token' => $task->getCompletionToken()],
+                UrlGeneratorInterface::ABSOLUTE_URL
+            ),
         ];
 
         return strtr($template, $placeholders);
