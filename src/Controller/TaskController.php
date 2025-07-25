@@ -18,6 +18,10 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/tasks')]
 class TaskController extends AbstractController
 {
+    private const COOKIE_STATUS = 'tasks_status';
+    private const COOKIE_EMPLOYEE = 'tasks_employee';
+    private const COOKIE_ASSIGNEE = 'tasks_assignee';
+
     public function __construct(
         private readonly OnboardingTaskFacade $taskService,
         private readonly AdminLookupService $lookup
@@ -35,9 +39,9 @@ class TaskController extends AbstractController
         if ($request->query->has('reset')) {
             $statusFilter = $employeeFilter = $assigneeFilter = '';
         } else {
-            $statusFilter ??= $request->cookies->get('tasks_status', '');
-            $employeeFilter ??= $request->cookies->get('tasks_employee', '');
-            $assigneeFilter ??= $request->cookies->get('tasks_assignee', '');
+            $statusFilter ??= $request->cookies->get(self::COOKIE_STATUS, '');
+            $employeeFilter ??= $request->cookies->get(self::COOKIE_EMPLOYEE, '');
+            $assigneeFilter ??= $request->cookies->get(self::COOKIE_ASSIGNEE, '');
         }
 
         $tasks = $this->taskService->getFilteredTasks($statusFilter, $employeeFilter, $assigneeFilter);
@@ -52,14 +56,14 @@ class TaskController extends AbstractController
         ]);
 
         if ($request->query->has('reset')) {
-            $response->headers->setCookie(new Cookie('tasks_status', '', 0));
-            $response->headers->setCookie(new Cookie('tasks_employee', '', 0));
-            $response->headers->setCookie(new Cookie('tasks_assignee', '', 0));
+            $response->headers->setCookie(new Cookie(self::COOKIE_STATUS, '', 0));
+            $response->headers->setCookie(new Cookie(self::COOKIE_EMPLOYEE, '', 0));
+            $response->headers->setCookie(new Cookie(self::COOKIE_ASSIGNEE, '', 0));
         } else {
             $expires = strtotime('+1 year');
-            $response->headers->setCookie(new Cookie('tasks_status', $statusFilter, $expires));
-            $response->headers->setCookie(new Cookie('tasks_employee', $employeeFilter, $expires));
-            $response->headers->setCookie(new Cookie('tasks_assignee', $assigneeFilter, $expires));
+            $response->headers->setCookie(new Cookie(self::COOKIE_STATUS, $statusFilter, $expires));
+            $response->headers->setCookie(new Cookie(self::COOKIE_EMPLOYEE, $employeeFilter, $expires));
+            $response->headers->setCookie(new Cookie(self::COOKIE_ASSIGNEE, $assigneeFilter, $expires));
         }
 
         return $response;
