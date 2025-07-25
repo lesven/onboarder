@@ -9,8 +9,10 @@ use Symfony\Component\Mime\Email;
 
 class EmailService
 {
-    public function __construct(private readonly EntityManagerInterface $entityManager)
-    {
+    public function __construct(
+        private readonly EntityManagerInterface $entityManager,
+        private readonly PasswordEncryptionService $encryptionService
+    ) {
     }
 
     /**
@@ -23,7 +25,23 @@ class EmailService
             throw new \RuntimeException('Keine E-Mail-Einstellungen gefunden.');
         }
 
-        $dsn = sprintf('smtp://%s:%s@%s:%d', urlencode((string) $settings->getSmtpUsername()), urlencode((string) $settings->getSmtpPassword()), $settings->getSmtpHost(), $settings->getSmtpPort());
+        // Setze den Verschlüsselungsservice in die Entity
+        $settings->setEncryptionService($this->encryptionService);
+
+        // Baue DSN basierend auf verfügbaren Credentials
+        if ($settings->getSmtpUsername() && $settings->getSmtpPassword()) {
+            // Mit Authentifizierung
+            $dsn = sprintf('smtp://%s:%s@%s:%d',
+                urlencode((string) $settings->getSmtpUsername()),
+                urlencode((string) $settings->getSmtpPassword()),
+                $settings->getSmtpHost(),
+                $settings->getSmtpPort()
+            );
+        } else {
+            // Ohne Authentifizierung
+            $dsn = sprintf('smtp://%s:%d', $settings->getSmtpHost(), $settings->getSmtpPort());
+        }
+        
         if ($settings->isIgnoreSslCertificate()) {
             $dsn .= '?verify_peer=0';
         }

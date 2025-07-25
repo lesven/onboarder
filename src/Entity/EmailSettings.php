@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\EmailSettingsRepository;
+use App\Service\PasswordEncryptionService;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: EmailSettingsRepository::class)]
@@ -34,10 +35,20 @@ class EmailSettings
     #[ORM\Column]
     private ?\DateTimeImmutable $updatedAt = null;
 
+    private ?PasswordEncryptionService $encryptionService = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
+    }
+
+    /**
+     * Setzt den Verschlüsselungsservice (wird durch Dependency Injection gesetzt)
+     */
+    public function setEncryptionService(PasswordEncryptionService $encryptionService): void
+    {
+        $this->encryptionService = $encryptionService;
     }
 
     public function getId(): ?int
@@ -83,12 +94,20 @@ class EmailSettings
 
     public function getSmtpPassword(): ?string
     {
-        return $this->smtpPassword;
+        if ($this->encryptionService === null) {
+            $this->encryptionService = new PasswordEncryptionService();
+        }
+        
+        return $this->encryptionService->decrypt($this->smtpPassword);
     }
 
     public function setSmtpPassword(?string $smtpPassword): static
     {
-        $this->smtpPassword = $smtpPassword;
+        if ($this->encryptionService === null) {
+            $this->encryptionService = new PasswordEncryptionService();
+        }
+        
+        $this->smtpPassword = $this->encryptionService->encrypt($smtpPassword);
 
         return $this;
     }
