@@ -19,7 +19,7 @@ class EmailSettingsController extends AbstractController
 
         if ($request->isMethod('POST')) {
             $settings->setSmtpHost($request->request->get('smtpHost'));
-            $settings->setSmtpPort((int)$request->request->get('smtpPort'));
+            $settings->setSmtpPort((int) $request->request->get('smtpPort'));
             $settings->setSmtpUsername($request->request->get('smtpUsername') ?: null);
             $settings->setSmtpPassword($request->request->get('smtpPassword') ?: null);
             $settings->setIgnoreSslCertificate($request->request->getBoolean('ignoreSsl'));
