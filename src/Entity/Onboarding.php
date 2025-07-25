@@ -30,17 +30,17 @@ class Onboarding
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $team = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $manager = null;
+    #[ORM\Column(length: 255)]
+    private string $manager;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(length: 255)]
     private ?string $managerEmail = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $buddy = null;
+    #[ORM\Column(length: 255)]
+    private string $buddy = '';
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $buddyEmail = null;
+    #[ORM\Column(length: 255)]
+    private string $buddyEmail = '';
 
     #[ORM\ManyToOne(targetEntity: OnboardingType::class, inversedBy: 'onboardings')]
     #[ORM\JoinColumn(nullable: false)]
@@ -147,7 +147,7 @@ class Onboarding
         return $this->manager;
     }
 
-    public function setManager(?string $manager): static
+    public function setManager(string $manager): static
     {
         $this->manager = $manager;
 
@@ -159,7 +159,7 @@ class Onboarding
         return $this->buddy;
     }
 
-    public function setBuddy(?string $buddy): static
+    public function setBuddy(string $buddy): static
     {
         $this->buddy = $buddy;
 
@@ -171,7 +171,7 @@ class Onboarding
         return $this->managerEmail;
     }
 
-    public function setManagerEmail(?string $managerEmail): static
+    public function setManagerEmail(string $managerEmail): static
     {
         $this->managerEmail = $managerEmail;
 
@@ -183,7 +183,7 @@ class Onboarding
         return $this->buddyEmail;
     }
 
-    public function setBuddyEmail(?string $buddyEmail): static
+    public function setBuddyEmail(string $buddyEmail): static
     {
         $this->buddyEmail = $buddyEmail;
 
