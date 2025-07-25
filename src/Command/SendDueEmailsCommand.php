@@ -36,10 +36,13 @@ class SendDueEmailsCommand extends Command
             }
 
             try {
+                $content = $task->getEmailTemplate() ?? '';
+                $content = $this->emailService->renderTemplate($content, $task);
+
                 $this->emailService->sendEmail(
                     $recipient,
                     'Aufgabe fällig: ' . $task->getTitle(),
-                    $task->getEmailTemplate() ?? ''
+                    $content
                 );
                 $task->setEmailSentAt(new \DateTimeImmutable());
             } catch (\Throwable $e) {
