@@ -1,0 +1,65 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Rolle {{ role.name }} - Administration - {{ parent() }}{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1><i class="bi bi-person-badge me-2"></i>{{ role.name }}</h1>
+        <p class="text-muted mb-0">Details der Rolle</p>
+    </div>
+    <a href="{{ path('app_admin_roles') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Zurück zur Übersicht
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <dl class="row mb-4">
+            <dt class="col-sm-3">ID</dt>
+            <dd class="col-sm-9">{{ role.id }}</dd>
+            <dt class="col-sm-3">E-Mail</dt>
+            <dd class="col-sm-9"><a href="mailto:{{ role.email }}">{{ role.email }}</a></dd>
+            <dt class="col-sm-3">Beschreibung</dt>
+            <dd class="col-sm-9">{{ role.description ?? '-' }}</dd>
+            <dt class="col-sm-3">Erstellt</dt>
+            <dd class="col-sm-9">{{ role.createdAt|date('d.m.Y H:i') }}</dd>
+        </dl>
+
+        <h5>Zugeordnete Aufgaben</h5>
+        {% if role.tasks|length > 0 %}
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Titel</th>
+                            <th>Block</th>
+                            <th>Reihenfolge</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for task in role.tasks|sort((a, b) => a.sortOrder <=> b.sortOrder) %}
+                        <tr>
+                            <td>{{ task.title }}</td>
+                            <td>{{ task.taskBlock.name ?? '-' }}</td>
+                            <td>{{ task.sortOrder }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted">Dieser Rolle sind keine Aufgaben zugeordnet.</p>
+        {% endif %}
+
+        <div class="d-flex justify-content-end">
+            <a href="{{ path('app_admin_role_edit', {'id': role.id}) }}" class="btn btn-warning me-2">
+                <i class="bi bi-pencil"></i> Bearbeiten
+            </a>
+            <a href="{{ path('app_admin_role_delete', {'id': role.id}) }}" class="btn btn-danger" onclick="return confirm('Wirklich löschen?');">
+                <i class="bi bi-trash"></i> Löschen
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
