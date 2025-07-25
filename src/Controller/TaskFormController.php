@@ -15,7 +15,7 @@ use Symfony\Component\Routing\Attribute\Route;
 /**
  * Controller für Task-Formular-Management (CRUD für einzelne Tasks).
  */
-#[Route('/onboarding/{onboardingId}/task')]
+#[Route('/onboarding/{id}/task')]
 class TaskFormController extends AbstractController
 {
     public function __construct(private readonly OnboardingTaskFacade $taskService)
@@ -23,9 +23,9 @@ class TaskFormController extends AbstractController
     }
 
     #[Route('/add', name: 'app_onboarding_add_task')]
-    public function add(int $onboardingId, Request $request, EntityManagerInterface $entityManager): Response
+    public function add(int $id, Request $request, EntityManagerInterface $entityManager): Response
     {
-        $onboarding = $entityManager->getRepository(Onboarding::class)->find($onboardingId);
+        $onboarding = $entityManager->getRepository(Onboarding::class)->find($id);
         if (!$onboarding) {
             throw $this->createNotFoundException('Onboarding nicht gefunden');
         }
@@ -47,11 +47,11 @@ class TaskFormController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/edit', name: 'app_onboarding_task_edit')]
-    public function edit(int $onboardingId, OnboardingTask $task, Request $request, EntityManagerInterface $entityManager): Response
+    #[Route('/{taskId}/edit', name: 'app_onboarding_task_edit')]
+    public function edit(int $id, OnboardingTask $task, Request $request, EntityManagerInterface $entityManager): Response
     {
         // Sicherheitscheck: Task gehört zum richtigen Onboarding
-        if ((int) $task->getOnboarding()->getId() !== (int) $onboardingId) {
+        if ((int) $task->getOnboarding()->getId() !== (int) $id) {
             throw $this->createNotFoundException('Task gehört nicht zu diesem Onboarding');
         }
 

@@ -168,7 +168,7 @@
                                                 {% endif %}
                                             </td>
                                             <td class="text-end">
-                                                <a href="{{ path('app_onboarding_task_edit', {'id': task.id}) }}" class="btn btn-sm btn-outline-secondary" title="Bearbeiten">
+                                                <a href="{{ path('app_onboarding_task_edit', {'id': onboarding.id, 'taskId': task.id}) }}" class="btn btn-sm btn-outline-secondary" title="Bearbeiten">
                                                     <i class="bi bi-pencil"></i>
                                                 </a>
                                                 <form method="post" action="{{ path('app_onboarding_task_delete', {'id': task.id}) }}" style="display:inline-block" onsubmit="return confirm('Aufgabe wirklich l\u00f6schen?');">
