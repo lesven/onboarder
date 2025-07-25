@@ -63,4 +63,28 @@ class OnboardingTaskRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult();
     }
+
+    /**
+     * Findet alle Tasks, deren E-Mail heute versendet werden soll.
+     */
+    public function findTasksDueForDate(\DateTimeImmutable $date): array
+    {
+        $start = $date->setTime(0, 0);
+        $end = $start->modify('+1 day');
+
+        return $this->createQueryBuilder('ot')
+            ->leftJoin('ot.onboarding', 'o')
+            ->where('ot.sendEmail = true')
+            ->andWhere('ot.emailTemplate IS NOT NULL')
+            ->andWhere('ot.emailSentAt IS NULL')
+            ->andWhere('(
+                (ot.dueDate >= :start AND ot.dueDate < :end) OR
+                (ot.dueDate IS NULL AND ot.dueDaysFromEntry IS NOT NULL AND DATE_ADD(o.entryDate, ot.dueDaysFromEntry, \'DAY\') >= :start AND DATE_ADD(o.entryDate, ot.dueDaysFromEntry, \'DAY\') < :end)
+            )')
+            ->setParameter('start', $start)
+            ->setParameter('end', $end)
+            ->orderBy('ot.dueDate', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

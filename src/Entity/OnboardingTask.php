@@ -192,6 +192,18 @@ class OnboardingTask
         return $this;
     }
 
+    /**
+     * Gibt die finale E-Mail-Adresse zurück (direkte Eingabe oder aus Rolle).
+     */
+    public function getFinalAssignedEmail(): ?string
+    {
+        if ($this->assignedEmail) {
+            return $this->assignedEmail;
+        }
+
+        return $this->assignedRole ? $this->assignedRole->getEmail() : null;
+    }
+
     public function isSendEmail(): bool
     {
         return $this->sendEmail;
