@@ -1,14 +1,14 @@
 <?php
 
-namespace App\\Command;
+namespace App\Command;
 
-use App\\Entity\\OnboardingTask;
-use App\\Service\\EmailService;
-use Doctrine\\ORM\\EntityManagerInterface;
-use Symfony\\Component\\Console\\Attribute\\AsCommand;
-use Symfony\\Component\\Console\\Command\\Command;
-use Symfony\\Component\\Console\\Input\\InputInterface;
-use Symfony\\Component\\Console\\Output\\OutputInterface;
+use App\Entity\OnboardingTask;
+use App\Service\EmailService;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 
 #[AsCommand('app:send-due-emails', 'Versendet alle heute fälligen Aufgaben-E-Mails.')]
 class SendDueEmailsCommand extends Command
@@ -24,7 +24,7 @@ class SendDueEmailsCommand extends Command
     {
         $today = new \DateTimeImmutable('today');
 
-        /** @var \App\\Repository\\OnboardingTaskRepository $repo */
+        /** @var \App\Repository\OnboardingTaskRepository $repo */
         $repo = $this->entityManager->getRepository(OnboardingTask::class);
         $tasks = $repo->findTasksDueForDate($today);
 
