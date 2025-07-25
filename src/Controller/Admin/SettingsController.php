@@ -162,6 +162,51 @@ class SettingsController extends AbstractController
         return $this->render('admin/role_form.html.twig');
     }
 
+    #[Route('/role/{id}', name: 'app_admin_role_show')]
+    public function showRole(Role $role): Response
+    {
+        return $this->render('admin/role_show.html.twig', [
+            'role' => $role,
+        ]);
+    }
+
+    #[Route('/role/{id}/edit', name: 'app_admin_role_edit')]
+    public function editRole(Request $request, Role $role, EntityManagerInterface $entityManager): Response
+    {
+        if ($request->isMethod('POST')) {
+            $role->setName($request->request->get('name'));
+            $role->setEmail($request->request->get('email'));
+            $role->setDescription($request->request->get('description'));
+            $role->setUpdatedAt(new \DateTimeImmutable());
+
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Rolle wurde erfolgreich aktualisiert!');
+
+            return $this->redirectToRoute('app_admin_roles');
+        }
+
+        return $this->render('admin/role_form.html.twig', [
+            'role' => $role,
+        ]);
+    }
+
+    #[Route('/role/{id}/delete', name: 'app_admin_role_delete', methods: ['DELETE'])]
+    public function deleteRole(Request $request, Role $role, EntityManagerInterface $entityManager): Response
+    {
+        $csrfToken = $request->request->get('_csrf_token');
+        if (!$this->isCsrfTokenValid('delete_role_' . $role->getId(), $csrfToken)) {
+            throw $this->createAccessDeniedException('Ungültiger CSRF-Token.');
+        }
+
+        $entityManager->remove($role);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Rolle wurde erfolgreich gelöscht!');
+
+        return $this->redirectToRoute('app_admin_roles');
+    }
+
     #[Route('/onboarding-type/new', name: 'app_admin_onboarding_type_new')]
     public function newOnboardingType(Request $request, EntityManagerInterface $entityManager): Response
     {
