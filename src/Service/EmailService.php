@@ -20,17 +20,27 @@ class EmailService
      */
     public function sendTestMail(string $recipient, string $subject, string $text): void
     {
+        $this->sendEmailInternal($recipient, $subject, $text, false);
+    }
+
+    /**
+     * Sends an HTML email using the stored settings.
+     */
+    public function sendEmail(string $recipient, string $subject, string $html): void
+    {
+        $this->sendEmailInternal($recipient, $subject, $html, true);
+    }
+
+    private function sendEmailInternal(string $recipient, string $subject, string $content, bool $isHtml): void
+    {
         $settings = $this->entityManager->getRepository(EmailSettings::class)->findOneBy([]);
         if (!$settings) {
             throw new \RuntimeException('Keine E-Mail-Einstellungen gefunden.');
         }
 
-        // Setze den Verschlüsselungsservice in die Entity
         $settings->setEncryptionService($this->encryptionService);
 
-        // Baue DSN basierend auf verfügbaren Credentials
         if ($settings->getSmtpUsername() && $settings->getSmtpPassword()) {
-            // Mit Authentifizierung
             $dsn = sprintf('smtp://%s:%s@%s:%d',
                 urlencode((string) $settings->getSmtpUsername()),
                 urlencode((string) $settings->getSmtpPassword()),
@@ -38,10 +48,9 @@ class EmailService
                 $settings->getSmtpPort()
             );
         } else {
-            // Ohne Authentifizierung
             $dsn = sprintf('smtp://%s:%d', $settings->getSmtpHost(), $settings->getSmtpPort());
         }
-        
+
         if ($settings->isIgnoreSslCertificate()) {
             $dsn .= '?verify_peer=0';
         }
@@ -51,8 +60,13 @@ class EmailService
         $email = (new Email())
             ->from($settings->getSmtpUsername() ?: 'example@example.com')
             ->to($recipient)
-            ->subject($subject)
-            ->text($text);
+            ->subject($subject);
+
+        if ($isHtml) {
+            $email->html($content);
+        } else {
+            $email->text($content);
+        }
 
         $mailer->send($email);
     }
