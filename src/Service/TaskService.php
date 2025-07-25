@@ -133,7 +133,28 @@ class TaskService
 
         $sendEmail = $request->request->get('sendEmail');
         if ($sendEmail) {
-            $task->setEmailTemplate($request->request->get('emailTemplate'));
+            $template = $request->request->get('emailTemplate');
+            $uploadedFile = $request->files->get('emailTemplateFile');
+            if ($uploadedFile && $uploadedFile->isValid()) {
+                // Validate file size (e.g., max 2MB)
+                $maxFileSize = 2 * 1024 * 1024; // 2MB
+                if ($uploadedFile->getSize() > $maxFileSize) {
+                    throw new \RuntimeException('Uploaded file exceeds the maximum allowed size of 2MB.');
+                }
+
+                // Validate MIME type (e.g., allow only text/plain or text/html)
+                $allowedMimeTypes = ['text/plain', 'text/html'];
+                if (!in_array($uploadedFile->getMimeType(), $allowedMimeTypes, true)) {
+                    throw new \RuntimeException('Uploaded file type is not allowed.');
+                }
+
+                // Optionally scan for malicious content (e.g., using an external library or service)
+                // Example: integrate a malware scanning library here if needed
+
+                // Read file contents after validation
+                $template = file_get_contents($uploadedFile->getPathname());
+            }
+            $task->setEmailTemplate($template);
         } else {
             $task->setEmailTemplate(null);
         }
