@@ -1,4 +1,4 @@
-{% extends 'base_clean.html.twig' %}
+{% extends 'base.html.twig' %}
 
 {% set edit = onboardingType is defined %}
 {% block title %}{{ edit ? 'OnboardingType bearbeiten' : 'Neuer OnboardingType' }} - Administration - {{ parent() }}{% endblock %}

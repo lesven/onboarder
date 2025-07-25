@@ -1,4 +1,4 @@
-{% extends 'base_clean.html.twig' %}
+{% extends 'base.html.twig' %}
 
 {% set edit = baseType is defined %}
 {% block title %}{{ edit ? 'BaseType bearbeiten' : 'Neuer BaseType' }} - Administration - {{ parent() }}{% endblock %}
