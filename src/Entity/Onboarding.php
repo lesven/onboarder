@@ -40,7 +40,7 @@ class Onboarding
     private string $buddy = '';
 
     #[ORM\Column(length: 255)]
-    private ?string $buddyEmail = null;
+    private string $buddyEmail = '';
 
     #[ORM\ManyToOne(targetEntity: OnboardingType::class, inversedBy: 'onboardings')]
     #[ORM\JoinColumn(nullable: false)]
