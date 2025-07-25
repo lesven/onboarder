@@ -29,11 +29,18 @@ class EmailSettingsController extends AbstractController
             $settings->setSmtpPort((int) $request->request->get('smtpPort'));
             $settings->setSmtpUsername($request->request->get('smtpUsername') ?: null);
             
-            // Nur setzen wenn ein neues Passwort eingegeben wurde
+            // Behandle Passwort-Logik
+            $clearPassword = $request->request->getBoolean('clearPassword');
             $newPassword = $request->request->get('smtpPassword');
-            if (!empty($newPassword)) {
+            
+            if ($clearPassword) {
+                // Passwort explizit auf null setzen
+                $settings->setSmtpPassword(null);
+            } elseif (!empty($newPassword)) {
+                // Nur setzen wenn ein neues Passwort eingegeben wurde
                 $settings->setSmtpPassword($newPassword);
             }
+            // Wenn weder clearPassword noch newPassword: aktuelles Passwort beibehalten
             
             $settings->setIgnoreSslCertificate($request->request->getBoolean('ignoreSsl'));
             $settings->setUpdatedAt(new \DateTimeImmutable());
