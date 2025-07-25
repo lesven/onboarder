@@ -18,6 +18,8 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/tasks')]
 class TaskController extends AbstractController
 {
+    private const COOKIE_EXPIRATION_PERIOD = '+1 year';
+
     public function __construct(
         private readonly OnboardingTaskFacade $taskService,
         private readonly AdminLookupService $lookup
@@ -41,7 +43,7 @@ class TaskController extends AbstractController
             $statusFilter ??= $request->cookies->get('tasks_status', '');
             $employeeFilter ??= $request->cookies->get('tasks_employee', '');
             $assigneeFilter ??= $request->cookies->get('tasks_assignee', '');
-            $cookieExpires = strtotime('+1 year');
+            $cookieExpires = strtotime(self::COOKIE_EXPIRATION_PERIOD);
         }
 
         $tasks = $this->taskService->getFilteredTasks($statusFilter, $employeeFilter, $assigneeFilter);
