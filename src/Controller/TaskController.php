@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\OnboardingTask;
 use App\Service\OnboardingTaskFacade;
+use App\Service\AdminLookupService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Cookie;
@@ -17,8 +18,10 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/tasks')]
 class TaskController extends AbstractController
 {
-    public function __construct(private readonly OnboardingTaskFacade $taskService)
-    {
+    public function __construct(
+        private readonly OnboardingTaskFacade $taskService,
+        private readonly AdminLookupService $lookup
+    ) {
     }
 
     #[Route('', name: 'app_tasks_overview')]
@@ -38,12 +41,14 @@ class TaskController extends AbstractController
         }
 
         $tasks = $this->taskService->getFilteredTasks($statusFilter, $employeeFilter, $assigneeFilter);
+        $roles = $this->lookup->getRoles();
 
         $response = $this->render('dashboard/tasks_overview.html.twig', [
             'tasks' => $tasks,
             'statusFilter' => $statusFilter,
             'employeeFilter' => $employeeFilter,
             'assigneeFilter' => $assigneeFilter,
+            'roles' => $roles,
         ]);
 
         if ($request->query->has('reset')) {
