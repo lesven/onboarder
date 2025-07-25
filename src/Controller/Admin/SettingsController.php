@@ -191,13 +191,18 @@ class SettingsController extends AbstractController
         ]);
     }
 
-    #[Route('/role/{id}/delete', name: 'app_admin_role_delete')]
-    public function deleteRole(Role $role, EntityManagerInterface $entityManager): Response
+    #[Route('/role/{id}/delete', name: 'app_admin_role_delete', methods: ['DELETE'])]
+    public function deleteRole(Request $request, Role $role, EntityManagerInterface $entityManager): Response
     {
+        $csrfToken = $request->request->get('_csrf_token');
+        if (!$this->isCsrfTokenValid('delete_role_' . $role->getId(), $csrfToken)) {
+            throw $this->createAccessDeniedException('Ungültiger CSRF-Token.');
+        }
+
         $entityManager->remove($role);
         $entityManager->flush();
 
-        $this->addFlash('success', 'Rolle wurde erfolgreich gel\u00f6scht!');
+        $this->addFlash('success', 'Rolle wurde erfolgreich gelöscht!');
 
         return $this->redirectToRoute('app_admin_roles');
     }
