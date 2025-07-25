@@ -74,14 +74,14 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="manager" class="form-label">Führungskraft</label>
-                                <input type="text" class="form-control" id="manager" name="manager" placeholder="Name des direkten Vorgesetzten">
+                                <label for="manager" class="form-label">Führungskraft *</label>
+                                <input type="text" class="form-control" id="manager" name="manager" placeholder="Name des direkten Vorgesetzten" required>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="managerEmail" class="form-label">E-Mail Führungskraft</label>
-                                <input type="email" class="form-control" id="managerEmail" name="managerEmail" placeholder="fk@arz.de">
+                                <label for="managerEmail" class="form-label">E-Mail Führungskraft *</label>
+                                <input type="email" class="form-control" id="managerEmail" name="managerEmail" placeholder="fk@arz.de" required>
                             </div>
                         </div>
                     </div>
@@ -89,14 +89,14 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="buddy" class="form-label">Buddy</label>
-                                <input type="text" class="form-control" id="buddy" name="buddy" placeholder="Name des Onboarding-Buddys">
+                                <label for="buddy" class="form-label">Buddy *</label>
+                                <input type="text" class="form-control" id="buddy" name="buddy" placeholder="Name des Onboarding-Buddys" required>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="buddyEmail" class="form-label">Buddy E-Mail</label>
-                                <input type="email" class="form-control" id="buddyEmail" name="buddyEmail" placeholder="buddy@arz.de">
+                                <label for="buddyEmail" class="form-label">Buddy E-Mail *</label>
+                                <input type="email" class="form-control" id="buddyEmail" name="buddyEmail" placeholder="buddy@arz.de" required>
                             </div>
                         </div>
                     </div>
@@ -121,7 +121,7 @@
             </div>
             <div class="card-body">
                 <h6>Pflichtfelder</h6>
-                <p class="small">Die Felder <strong>Vorname</strong>, <strong>Nachname</strong> und <strong>Eintrittsdatum</strong> sind erforderlich.</p>
+                <p class="small">Die Felder <strong>Vorname</strong>, <strong>Nachname</strong>, <strong>Eintrittsdatum</strong>, <strong>Führungskraft</strong>, <strong>E-Mail Führungskraft</strong>, <strong>Buddy</strong> und <strong>Buddy E-Mail</strong> sind erforderlich.</p>
                 
                 <h6>Onboarding-Typ</h6>
                 <p class="small">Wählen Sie einen Onboarding-Typ um automatisch die entsprechenden Aufgaben zu erstellen.</p>
