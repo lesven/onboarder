@@ -19,6 +19,9 @@ use Symfony\Component\Routing\Attribute\Route;
 class TaskController extends AbstractController
 {
     private const COOKIE_EXPIRATION_PERIOD = '+1 year';
+    private const COOKIE_STATUS = 'tasks_status';
+    private const COOKIE_EMPLOYEE = 'tasks_employee';
+    private const COOKIE_ASSIGNEE = 'tasks_assignee';
 
     public function __construct(
         private readonly OnboardingTaskFacade $taskService,
@@ -58,9 +61,9 @@ class TaskController extends AbstractController
         ]);
 
         // Cookies mit entsprechenden Werten und Ablaufzeit setzen
-        $response->headers->setCookie(new Cookie('tasks_status', $statusFilter, $cookieExpires));
-        $response->headers->setCookie(new Cookie('tasks_employee', $employeeFilter, $cookieExpires));
-        $response->headers->setCookie(new Cookie('tasks_assignee', $assigneeFilter, $cookieExpires));
+        $response->headers->setCookie(new Cookie(self::COOKIE_STATUS, $statusFilter, $cookieExpires));
+        $response->headers->setCookie(new Cookie(self::COOKIE_EMPLOYEE, $employeeFilter, $cookieExpires));
+        $response->headers->setCookie(new Cookie(self::COOKIE_ASSIGNEE, $assigneeFilter, $cookieExpires));
 
         return $response;
     }
