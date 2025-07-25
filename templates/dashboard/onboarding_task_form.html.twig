@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% set edit = task is defined %}
+{% set edit = task is defined and task is not null %}
 
 {% block title %}{% if edit %}Aufgabe bearbeiten{% else %}Neue Aufgabe{% endif %} - {{ onboarding.fullName }}{% endblock %}
 
