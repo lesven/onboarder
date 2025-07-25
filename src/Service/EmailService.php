@@ -3,15 +3,18 @@
 namespace App\Service;
 
 use App\Entity\EmailSettings;
+use App\Entity\OnboardingTask;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Mailer\Transport;
 use Symfony\Component\Mime\Email;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class EmailService
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
-        private readonly PasswordEncryptionService $encryptionService
+        private readonly PasswordEncryptionService $encryptionService,
+        private readonly UrlGeneratorInterface $urlGenerator
     ) {
     }
 
@@ -29,6 +32,33 @@ class EmailService
     public function sendEmail(string $recipient, string $subject, string $html): void
     {
         $this->sendEmailInternal($recipient, $subject, $html, true);
+    }
+
+    /**
+     * Renders an email template with onboarding specific placeholders.
+     */
+    public function renderTemplate(string $template, OnboardingTask $task): string
+    {
+        $onboarding = $task->getOnboarding();
+
+        $placeholders = [
+            '{{firstName}}'    => $onboarding?->getFirstName() ?? '',
+            '{{lastName}}'     => $onboarding?->getLastName() ?? '',
+            '{{entryDate}}'    => $onboarding?->getEntryDate()?->format('Y-m-d') ?? '',
+            '{{onboardingId}}' => (string)($onboarding?->getId() ?? ''),
+            '{{taskId}}'       => (string)($task->getId() ?? ''),
+            '{{manager}}'      => $onboarding?->getManager() ?? '',
+            '{{managerEmail}}'      => $onboarding?->getManagerEmail() ?? '',
+            '{{buddy}}'        => $onboarding?->getBuddy() ?? '',
+            '{{buddyEmail}}'  => $onboarding?->getBuddyEmail() ?? '',
+            '{{onboardingLink}}' => $onboarding ? $this->urlGenerator->generate(
+                'app_onboarding_detail',
+                ['id' => $onboarding->getId()],
+                UrlGeneratorInterface::ABSOLUTE_URL
+            ) : '',
+        ];
+
+        return strtr($template, $placeholders);
     }
 
     private function sendEmailInternal(string $recipient, string $subject, string $content, bool $isHtml): void
