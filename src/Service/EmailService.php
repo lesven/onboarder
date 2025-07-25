@@ -43,7 +43,7 @@ class EmailService
             '{{firstName}}'    => $onboarding?->getFirstName() ?? '',
             '{{lastName}}'     => $onboarding?->getLastName() ?? '',
             '{{entryDate}}'    => $onboarding?->getEntryDate()?->format('Y-m-d') ?? '',
-            '{{onboardingId}}' => $onboarding?->getId() ?? '',
+            '{{onboardingId}}' => (string)($onboarding?->getId() ?? ''),
             '{{taskId}}'       => $task->getId() ?? '',
             '{{manager}}'      => $onboarding?->getManager() ?? '',
             '{{buddy}}'        => $onboarding?->getBuddy() ?? '',
