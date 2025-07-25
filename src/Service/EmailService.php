@@ -9,8 +9,10 @@ use Symfony\Component\Mime\Email;
 
 class EmailService
 {
-    public function __construct(private readonly EntityManagerInterface $entityManager)
-    {
+    public function __construct(
+        private readonly EntityManagerInterface $entityManager,
+        private readonly PasswordEncryptionService $encryptionService
+    ) {
     }
 
     /**
@@ -22,6 +24,9 @@ class EmailService
         if (!$settings) {
             throw new \RuntimeException('Keine E-Mail-Einstellungen gefunden.');
         }
+
+        // Setze den Verschlüsselungsservice in die Entity
+        $settings->setEncryptionService($this->encryptionService);
 
         $dsn = sprintf('smtp://%s:%s@%s:%d', urlencode((string) $settings->getSmtpUsername()), urlencode((string) $settings->getSmtpPassword()), $settings->getSmtpHost(), $settings->getSmtpPort());
         if ($settings->isIgnoreSslCertificate()) {
