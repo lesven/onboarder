@@ -14,6 +14,7 @@ stop: ## Stoppt Docker Container
 deploy:
 	git pull
 	make install
+	git reset --hard HEAD
 
 install: ## Baut Container, installiert Abhängigkeiten und führt Setup aus
 	$(DOCKER_COMPOSE) up -d --build
