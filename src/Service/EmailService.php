@@ -23,7 +23,7 @@ class EmailService
             throw new \RuntimeException('Keine E-Mail-Einstellungen gefunden.');
         }
 
-        $dsn = sprintf('smtp://%s:%s@%s', urlencode((string) $settings->getSmtpUsername()), urlencode((string) $settings->getSmtpPassword()), $settings->getSmtpHost());
+        $dsn = sprintf('smtp://%s:%s@%s:%d', urlencode((string) $settings->getSmtpUsername()), urlencode((string) $settings->getSmtpPassword()), $settings->getSmtpHost(), $settings->getSmtpPort());
         if ($settings->isIgnoreSslCertificate()) {
             $dsn .= '?verify_peer=0';
         }
@@ -31,7 +31,7 @@ class EmailService
         $mailer = new \Symfony\Component\Mailer\Mailer($transport);
 
         $email = (new Email())
-            ->from($settings->getSmtpUsername() ?: 'test@example.com')
+            ->from($settings->getSmtpUsername() ?: 'example@example.com')
             ->to($recipient)
             ->subject($subject)
             ->text($text);
