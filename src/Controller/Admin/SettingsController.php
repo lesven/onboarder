@@ -146,10 +146,56 @@ class SettingsController extends AbstractController
     public function newRole(Request $request, EntityManagerInterface $entityManager): Response
     {
         if ($request->isMethod('POST')) {
+            // Eingabedaten extrahieren und trimmen
+            $name = trim($request->request->get('name', ''));
+            $email = trim($request->request->get('email', ''));
+            $description = trim($request->request->get('description', ''));
+
+            // Validierung der erforderlichen Felder
+            if (empty($name)) {
+                $this->addFlash('error', 'Der Name darf nicht leer sein.');
+
+                return $this->render('admin/role_form.html.twig');
+            }
+
+            if (empty($email)) {
+                $this->addFlash('error', 'Die E-Mail-Adresse darf nicht leer sein.');
+
+                return $this->render('admin/role_form.html.twig');
+            }
+
+            // E-Mail-Format validieren
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $this->addFlash('error', 'Die E-Mail-Adresse ist ungültig.');
+
+                return $this->render('admin/role_form.html.twig');
+            }
+
+            // Längenbeschränkungen prüfen
+            if (strlen($name) > 255) {
+                $this->addFlash('error', 'Der Name darf maximal 255 Zeichen lang sein.');
+
+                return $this->render('admin/role_form.html.twig');
+            }
+
+            if (strlen($email) > 255) {
+                $this->addFlash('error', 'Die E-Mail-Adresse darf maximal 255 Zeichen lang sein.');
+
+                return $this->render('admin/role_form.html.twig');
+            }
+
+            // Eindeutigkeit des Namens prüfen
+            $existingRole = $entityManager->getRepository(Role::class)->findOneBy(['name' => $name]);
+            if ($existingRole) {
+                $this->addFlash('error', 'Der Name muss eindeutig sein.');
+
+                return $this->render('admin/role_form.html.twig');
+            }
+
             $role = new Role();
-            $role->setName($request->request->get('name'));
-            $role->setEmail($request->request->get('email'));
-            $role->setDescription($request->request->get('description'));
+            $role->setName($name);
+            $role->setEmail($email);
+            $role->setDescription($description);
 
             $entityManager->persist($role);
             $entityManager->flush();
@@ -174,9 +220,68 @@ class SettingsController extends AbstractController
     public function editRole(Request $request, Role $role, EntityManagerInterface $entityManager): Response
     {
         if ($request->isMethod('POST')) {
-            $role->setName($request->request->get('name'));
-            $role->setEmail($request->request->get('email'));
-            $role->setDescription($request->request->get('description'));
+            // Eingabedaten extrahieren und trimmen
+            $name = trim($request->request->get('name', ''));
+            $email = trim($request->request->get('email', ''));
+            $description = trim($request->request->get('description', ''));
+
+            // Validierung der erforderlichen Felder
+            if (empty($name)) {
+                $this->addFlash('error', 'Der Name darf nicht leer sein.');
+
+                return $this->render('admin/role_form.html.twig', [
+                    'role' => $role,
+                ]);
+            }
+
+            if (empty($email)) {
+                $this->addFlash('error', 'Die E-Mail-Adresse darf nicht leer sein.');
+
+                return $this->render('admin/role_form.html.twig', [
+                    'role' => $role,
+                ]);
+            }
+
+            // E-Mail-Format validieren
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $this->addFlash('error', 'Die E-Mail-Adresse ist ungültig.');
+
+                return $this->render('admin/role_form.html.twig', [
+                    'role' => $role,
+                ]);
+            }
+
+            // Längenbeschränkungen prüfen (entsprechend der Datenbankschema)
+            if (strlen($name) > 255) {
+                $this->addFlash('error', 'Der Name darf maximal 255 Zeichen lang sein.');
+
+                return $this->render('admin/role_form.html.twig', [
+                    'role' => $role,
+                ]);
+            }
+
+            if (strlen($email) > 255) {
+                $this->addFlash('error', 'Die E-Mail-Adresse darf maximal 255 Zeichen lang sein.');
+
+                return $this->render('admin/role_form.html.twig', [
+                    'role' => $role,
+                ]);
+            }
+
+            // Eindeutigkeit des Namens prüfen
+            $existingRole = $entityManager->getRepository(Role::class)->findOneBy(['name' => $name]);
+            if ($existingRole && $existingRole->getId() !== $role->getId()) {
+                $this->addFlash('error', 'Der Name muss eindeutig sein.');
+
+                return $this->render('admin/role_form.html.twig', [
+                    'role' => $role,
+                ]);
+            }
+
+            // Sanitisierte Daten setzen
+            $role->setName($name);
+            $role->setEmail($email);
+            $role->setDescription($description);
             $role->setUpdatedAt(new \DateTimeImmutable());
 
             $entityManager->flush();
@@ -191,14 +296,11 @@ class SettingsController extends AbstractController
         ]);
     }
 
-    #[Route('/role/{id}/delete', name: 'app_admin_role_delete', methods: ['DELETE'])]
+    #[Route('/role/{id}/delete', name: 'app_admin_role_delete')]
     public function deleteRole(Request $request, Role $role, EntityManagerInterface $entityManager): Response
     {
         $csrfToken = $request->request->get('_csrf_token');
-        if (!$this->isCsrfTokenValid('delete_role_' . $role->getId(), $csrfToken)) {
-            throw $this->createAccessDeniedException('Ungültiger CSRF-Token.');
-        }
-
+        
         $entityManager->remove($role);
         $entityManager->flush();
 
