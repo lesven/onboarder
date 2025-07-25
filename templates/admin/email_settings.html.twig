@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}E-Mail-Einstellungen - {{ parent() }}{% endblock %}
+
+{% block body %}
+<h1 class="mb-4"><i class="bi bi-envelope-gear"></i> E-Mail-Einstellungen</h1>
+<form method="post">
+    <div class="mb-3">
+        <label for="smtpHost" class="form-label">SMTP Host</label>
+        <input type="text" class="form-control" id="smtpHost" name="smtpHost" value="{{ settings.smtpHost }}" required>
+    </div>
+    <div class="mb-3">
+        <label for="smtpUsername" class="form-label">SMTP Username</label>
+        <input type="text" class="form-control" id="smtpUsername" name="smtpUsername" value="{{ settings.smtpUsername }}">
+    </div>
+    <div class="mb-3">
+        <label for="smtpPassword" class="form-label">SMTP Passwort</label>
+        <input type="password" class="form-control" id="smtpPassword" name="smtpPassword" value="{{ settings.smtpPassword }}">
+    </div>
+    <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" value="1" id="ignoreSsl" name="ignoreSsl" {% if settings.ignoreSslCertificate %}checked{% endif %}>
+        <label class="form-check-label" for="ignoreSsl">SSL Zertifikat ignorieren</label>
+    </div>
+    <button type="submit" class="btn btn-primary">Speichern</button>
+</form>
+{% endblock %}
