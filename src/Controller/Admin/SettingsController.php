@@ -6,6 +6,7 @@ use App\Entity\BaseType;
 use App\Entity\OnboardingType;
 use App\Entity\Role;
 use App\Entity\TaskBlock;
+use App\Entity\User;
 use App\Service\AdminLookupService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -31,6 +32,7 @@ class SettingsController extends AbstractController
             'onboardingTypes' => $entityManager->getRepository(OnboardingType::class)->count([]),
             'roles' => $entityManager->getRepository(Role::class)->count([]),
             'taskBlocks' => $entityManager->getRepository(TaskBlock::class)->count([]),
+            'users' => $entityManager->getRepository(User::class)->count([]),
         ];
 
         return $this->render('admin/index.html.twig', [
