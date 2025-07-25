@@ -37,7 +37,7 @@ class Onboarding
     private ?string $managerEmail = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $buddy = null;
+    private string $buddy = '';
 
     #[ORM\Column(length: 255)]
     private ?string $buddyEmail = null;
