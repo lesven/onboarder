@@ -86,6 +86,7 @@ class TaskGenerationService
         $this->applyTemplateDueDate($task, $templateTask, $onboarding->getEntryDate());
         $this->applyTemplateAssignments($task, $templateTask);
         $this->applyTemplateEmail($task, $templateTask);
+        $this->applyTemplateAction($task, $templateTask);
 
         return $task;
     }
@@ -138,6 +139,16 @@ class TaskGenerationService
     {
         if ($templateTask->getEmailTemplate()) {
             $task->setEmailTemplate($templateTask->getEmailTemplate());
+            $task->setSendEmail(true);
+        }
+    }
+
+    private function applyTemplateAction(OnboardingTask $task, Task $templateTask): void
+    {
+        $task->setActionType($templateTask->getActionType());
+        $task->setApiUrl($templateTask->getApiUrl());
+
+        if (Task::ACTION_EMAIL === $templateTask->getActionType()) {
             $task->setSendEmail(true);
         }
     }

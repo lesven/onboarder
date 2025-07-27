@@ -14,6 +14,10 @@ class OnboardingTask
     public const STATUS_COMPLETED = 'completed';
     public const STATUS_WAITING_FOR_DEPENDENCY = 'waiting_for_dependency';
 
+    public const ACTION_NONE = 'none';
+    public const ACTION_EMAIL = 'email';
+    public const ACTION_API = 'api';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -48,6 +52,12 @@ class OnboardingTask
 
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $emailTemplate = null;
+
+    #[ORM\Column(length: 50)]
+    private string $actionType = self::ACTION_NONE;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $apiUrl = null;
 
     #[ORM\Column(length: 64, unique: true)]
     private string $completionToken;
@@ -228,6 +238,30 @@ class OnboardingTask
     public function setEmailTemplate(?string $emailTemplate): static
     {
         $this->emailTemplate = $emailTemplate;
+
+        return $this;
+    }
+
+    public function getActionType(): string
+    {
+        return $this->actionType;
+    }
+
+    public function setActionType(string $actionType): static
+    {
+        $this->actionType = $actionType;
+
+        return $this;
+    }
+
+    public function getApiUrl(): ?string
+    {
+        return $this->apiUrl;
+    }
+
+    public function setApiUrl(?string $apiUrl): static
+    {
+        $this->apiUrl = $apiUrl;
 
         return $this;
     }

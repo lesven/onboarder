@@ -66,6 +66,38 @@ class EmailService
         return strtr($template, $placeholders);
     }
 
+    /**
+     * Renders a template and URL-encodes all placeholder values.
+     */
+    public function renderUrlEncodedTemplate(string $template, OnboardingTask $task): string
+    {
+        $onboarding = $task->getOnboarding();
+
+        $placeholders = [
+            '{{firstName}}'    => rawurlencode($onboarding?->getFirstName() ?? ''),
+            '{{lastName}}'     => rawurlencode($onboarding?->getLastName() ?? ''),
+            '{{entryDate}}'    => rawurlencode($onboarding?->getEntryDate()?->format('Y-m-d') ?? ''),
+            '{{onboardingId}}' => rawurlencode((string)($onboarding?->getId() ?? '')),
+            '{{taskId}}'       => rawurlencode((string)($task->getId() ?? '')),
+            '{{manager}}'      => rawurlencode($onboarding?->getManager() ?? ''),
+            '{{managerEmail}}'      => rawurlencode($onboarding?->getManagerEmail() ?? ''),
+            '{{buddy}}'        => rawurlencode($onboarding?->getBuddy() ?? ''),
+            '{{buddyEmail}}'  => rawurlencode($onboarding?->getBuddyEmail() ?? ''),
+            '{{onboardingLink}}' => rawurlencode($onboarding ? $this->urlGenerator->generate(
+                'app_onboarding_detail',
+                ['id' => $onboarding->getId()],
+                UrlGeneratorInterface::ABSOLUTE_URL
+            ) : ''),
+            '{{taskCompleteLink}}' => rawurlencode($this->urlGenerator->generate(
+                'app_public_task_complete',
+                ['token' => $task->getCompletionToken()],
+                UrlGeneratorInterface::ABSOLUTE_URL
+            )),
+        ];
+
+        return strtr($template, $placeholders);
+    }
+
     private function sendEmailInternal(string $recipient, string $subject, string $content, bool $isHtml): void
     {
         $settings = $this->entityManager->getRepository(EmailSettings::class)->findOneBy([]);
