@@ -65,8 +65,25 @@ check: ## Führt Code-Quality-Checks aus
 	$(DOCKER_COMPOSE) exec app php bin/console lint:twig templates/
 	$(DOCKER_COMPOSE) exec app php bin/console lint:yaml config/
 
+check-all: ## Führt alle Quality-Checks und Tests aus
+	make check
+	make test
+
 test: ## Führt PHPUnit Tests aus
 	$(DOCKER_COMPOSE) exec app php bin/phpunit
+
+test-verbose: ## Führt PHPUnit Tests mit detaillierter Ausgabe aus
+	$(DOCKER_COMPOSE) exec app php bin/phpunit --verbose
+
+test-coverage: ## Führt PHPUnit Tests mit Code Coverage aus
+	$(DOCKER_COMPOSE) exec app php bin/phpunit --coverage-html var/coverage
+
+test-filter: ## Führt spezifische Tests aus (make test-filter FILTER=EncryptSmtpPasswordsCommandTest)
+	$(DOCKER_COMPOSE) exec app php bin/phpunit --filter $(FILTER)
+
+test-watch: ## Führt Tests automatisch bei Dateiänderungen aus (benötigt fswatch)
+	@echo "Watching for file changes... Press Ctrl+C to stop"
+	@fswatch -o src/ tests/ | xargs -n1 -I{} make test || echo "fswatch not found. Install with: brew install fswatch"
 
 ci-install: ## Installation für CI/CD (ohne interaktive Eingaben)
 	$(DOCKER_COMPOSE) up -d --build --quiet-pull
