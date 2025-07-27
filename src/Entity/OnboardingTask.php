@@ -42,6 +42,8 @@ class OnboardingTask
     #[ORM\Column(nullable: true)]
     private ?int $dueDaysFromEntry = null;
 
+    private ?\App\Entity\Action\TaskActionInterface $taskAction = null;
+
     // Zuständigkeit
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $assignedEmail = null;
@@ -102,9 +104,6 @@ class OnboardingTask
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $completedAt = null;
-
-    #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $emailSentAt = null;
 
     public function __construct()
     {
@@ -194,6 +193,18 @@ class OnboardingTask
         return $this;
     }
 
+    public function getTaskAction(): ?\App\Entity\Action\TaskActionInterface
+    {
+        return $this->taskAction;
+    }
+
+    public function setTaskAction(?\App\Entity\Action\TaskActionInterface $taskAction): static
+    {
+        $this->taskAction = $taskAction;
+
+        return $this;
+    }
+
     public function getAssignedEmail(): ?string
     {
         return $this->assignedEmail;
@@ -211,6 +222,10 @@ class OnboardingTask
      */
     public function getFinalAssignedEmail(): ?string
     {
+        if ($this->taskAction instanceof \App\Entity\Action\EmailAction && $this->taskAction->getAssignedEmail()) {
+            return $this->taskAction->getAssignedEmail();
+        }
+
         if ($this->assignedEmail) {
             return $this->assignedEmail;
         }
@@ -397,18 +412,6 @@ class OnboardingTask
     public function setCompletedAt(?\DateTimeImmutable $completedAt): static
     {
         $this->completedAt = $completedAt;
-
-        return $this;
-    }
-
-    public function getEmailSentAt(): ?\DateTimeImmutable
-    {
-        return $this->emailSentAt;
-    }
-
-    public function setEmailSentAt(?\DateTimeImmutable $emailSentAt): static
-    {
-        $this->emailSentAt = $emailSentAt;
 
         return $this;
     }
