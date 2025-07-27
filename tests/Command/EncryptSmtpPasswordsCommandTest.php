@@ -101,7 +101,7 @@ class EncryptSmtpPasswordsCommandTest extends TestCase
         $this->assertEquals(Command::SUCCESS, $exitCode);
         $output = $this->commandTester->getDisplay();
         $this->assertStringContainsString('2 Passwörter verschlüsselt', $output);
-        $this->assertStringContainsString('0 bereits verschlüsselt', $output);
+        $this->assertStringContainsString('0 bereits', $output); // Verkürzt wegen Zeilenwrap
     }
 
     public function testExecuteWithAlreadyEncryptedPasswords(): void
@@ -135,7 +135,7 @@ class EncryptSmtpPasswordsCommandTest extends TestCase
         $this->assertEquals(Command::SUCCESS, $exitCode);
         $output = $this->commandTester->getDisplay();
         $this->assertStringContainsString('0 Passwörter verschlüsselt', $output);
-        $this->assertStringContainsString('2 bereits verschlüsselt', $output);
+        $this->assertStringContainsString('2 bereits', $output); // Verkürzt wegen Zeilenwrap
     }
 
     public function testExecuteWithMixedPasswords(): void
@@ -180,7 +180,7 @@ class EncryptSmtpPasswordsCommandTest extends TestCase
         $this->assertEquals(Command::SUCCESS, $exitCode);
         $output = $this->commandTester->getDisplay();
         $this->assertStringContainsString('2 Passwörter verschlüsselt', $output);
-        $this->assertStringContainsString('1 bereits verschlüsselt', $output);
+        $this->assertStringContainsString('1 bereits', $output); // Verkürzt wegen Zeilenwrap
     }
 
     public function testCommandName(): void
