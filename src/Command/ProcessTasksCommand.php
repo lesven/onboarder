@@ -52,15 +52,13 @@ class ProcessTasksCommand extends Command
                         }
                         $command = $this->emailService->renderUrlEncodedTemplate($commandTemplate, $task);
                         
-                        // Führe den Befehl in einer Shell aus, die mehrzeilige Befehle versteht
-                        $tempFile = tempnam(sys_get_temp_dir(), 'api_command_');
-                        file_put_contents($tempFile, $command);
+                        // Normalisiere den curl-Befehl zu einer einzigen Zeile
+                        $command = str_replace([' \\', '\\ ', '\n', '\r'], [' ', ' ', ' ', ''], $command);
+                        $command = preg_replace('/\s+/', ' ', trim($command));
                         
-                        $output->writeln('<info>Executing API call from temp file: ' . $tempFile . '</info>');
-                        $output->writeln('<info>Command content: ' . $command . '</info>');
+                        $output->writeln('<info>Executing API call: ' . $command . '</info>');
                         
-                        exec("bash '$tempFile'", $commandOutput, $exitCode);
-                        unlink($tempFile);
+                        exec($command, $commandOutput, $exitCode);
                         
                         if (0 !== $exitCode) {
                             $output->writeln('<error>Command output: ' . implode("\n", $commandOutput) . '</error>');
