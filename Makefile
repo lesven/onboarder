@@ -62,8 +62,8 @@ setup-direct: ## Führt Setup-Befehle direkt aus (Fallback wenn setup-script nic
 	$(DOCKER_COMPOSE) exec app php bin/console doctrine:schema:validate
 	@echo "Setup-Befehle direkt ausgeführt!"
 
-shell: ## Öffnet Shell im App-Container
-	$(DOCKER_COMPOSE) exec app sh
+shell: ## Öffnet Shell im App-Container (bash wenn verfügbar)
+	$(DOCKER_COMPOSE) exec app bash || $(DOCKER_COMPOSE) exec app sh
 
 console: ## Führt Symfony Console-Befehle aus (z.B. make console CMD="cache:clear")
 	$(DOCKER_COMPOSE) exec app php bin/console $(CMD)
@@ -89,6 +89,15 @@ check: ## Führt Code-Quality-Checks aus
 
 phpstan: ## Führt statische Analyse mit PHPStan aus
 	$(DOCKER_COMPOSE) exec app vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+
+phpstan-fix: ## Führt PHPStan mit höherem Memory-Limit aus (1GB)
+	$(DOCKER_COMPOSE) exec app vendor/bin/phpstan analyse --memory-limit=1G
+
+phpstan-baseline: ## Erstellt eine PHPStan Baseline für bestehende Fehler
+	$(DOCKER_COMPOSE) exec app vendor/bin/phpstan analyse --memory-limit=1G --generate-baseline
+
+phpstan-clear: ## Löscht PHPStan Cache
+	$(DOCKER_COMPOSE) exec app vendor/bin/phpstan clear-result-cache
 
 phpmd: ## Führt PHP Mess Detector aus
 	$(DOCKER_COMPOSE) exec app vendor/bin/phpmd src text phpmd.xml
@@ -119,8 +128,10 @@ ci-install: ## Installation für CI/CD (ohne interaktive Eingaben)
 	$(DOCKER_COMPOSE) exec -T app php bin/console cache:clear --env=prod --no-interaction
 
 # Beispiel-Befehle:
-# make start          - Container starten
-# make setup          - Entitäten erstellen (nach erstem Start)
+# make start                    - Container starten
+# make build                    - Container neu bauen
+# make setup                    - Entitäten erstellen (nach erstem Start)
 # make console CMD="cache:clear" - Cache leeren
-# make migration      - Neue Migration erstellen
-# make migrate        - Migrationen ausführen
+# make migration                - Neue Migration erstellen
+# make migrate                  - Migrationen ausführen
+# make ENV=prod install         - Installation für Produktion
