@@ -51,10 +51,22 @@ class ProcessTasksCommand extends Command
                             continue 2;
                         }
                         $command = $this->emailService->renderUrlEncodedTemplate($commandTemplate, $task);
-                        exec($command, $_, $exitCode);
+                        
+                        // Führe den Befehl in einer Shell aus, die mehrzeilige Befehle versteht
+                        $tempFile = tempnam(sys_get_temp_dir(), 'api_command_');
+                        file_put_contents($tempFile, $command);
+                        
+                        $output->writeln('<info>Executing API call from temp file: ' . $tempFile . '</info>');
+                        $output->writeln('<info>Command content: ' . $command . '</info>');
+                        
+                        exec("bash '$tempFile'", $commandOutput, $exitCode);
+                        unlink($tempFile);
+                        
                         if (0 !== $exitCode) {
+                            $output->writeln('<error>Command output: ' . implode("\n", $commandOutput) . '</error>');
                             throw new \RuntimeException('API call failed with exit code ' . $exitCode);
                         }
+                        $output->writeln('<info>API call successful. Output: ' . implode("\n", $commandOutput) . '</info>');
                         $task->setEmailSentAt(new \DateTimeImmutable());
                         break;
                     default:
