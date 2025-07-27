@@ -106,8 +106,8 @@ class ProcessTasksCommandTest extends TestCase
             ->with('GET', 'http://example.com/api')
             ->willReturn($mockResponse);
 
-        $this->em->expects($this->once())->method('persist');
-        $this->em->expects($this->once())->method('flush');
+        $this->em->expects($this->exactly(2))->method('persist');
+        $this->em->expects($this->exactly(2))->method('flush');
 
         $exit = $this->tester->execute(['date' => '2025-07-27']);
 

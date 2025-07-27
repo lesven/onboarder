@@ -136,11 +136,11 @@ class ProcessTasksCommand extends Command
             
             $io->writeln('Email sent successfully');
             
-            // Markiere als versendet
-            $task->setEmailSentAt(new \DateTimeImmutable());
+            // Markiere als abgeschlossen
+            $task->setCompletedAt(new \DateTimeImmutable());
             $this->entityManager->persist($task);
             $this->entityManager->flush();
-            $io->writeln('Task marked as sent');
+            $io->writeln('Task marked as completed');
             
             return true;
         } catch (\Exception $e) {
