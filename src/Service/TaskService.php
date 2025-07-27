@@ -7,6 +7,8 @@ use App\Entity\Task;
 use App\Entity\TaskBlock;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
+use DateTimeImmutable;
+use RuntimeException;
 
 /**
  * Service class responsible for managing Task entities.
@@ -91,27 +93,27 @@ class TaskService
         $task->setSortOrder((int) $request->request->get('sortOrder') ?: 0);
 
         $dueDateType = $request->request->get('dueDateType');
+
+        $task->setDueDate(null);
+        $task->setDueDaysFromEntry(null);
+
         if ('fixed' === $dueDateType) {
             $dueDate = $request->request->get('dueDate');
             if ($dueDate) {
-                $dateTime = \DateTimeImmutable::createFromFormat('Y-m-d', $dueDate);
-                if (false === $dateTime) {
-                    // Handle invalid date format (e.g., log an error or set to null)
-                    $task->setDueDate(null);
-                } else {
-                    $task->setDueDate($dateTime);
+                try {
+                    $dateTime = new DateTimeImmutable($dueDate);
+                    if ($dateTime->format('Y-m-d') === $dueDate) {
+                        $task->setDueDate($dateTime);
+                    }
+                } catch (\Exception) {
+                    // Ignore invalid date
                 }
-            } else {
-                $task->setDueDate(null);
             }
-            $task->setDueDaysFromEntry(null);
-        } elseif ('relative' === $dueDateType) {
+        }
+
+        if ('relative' === $dueDateType) {
             $dueDays = $request->request->get('dueDaysFromEntry');
             $task->setDueDaysFromEntry(null !== $dueDays && '' !== $dueDays ? (int) $dueDays : null);
-            $task->setDueDate(null);
-        } else {
-            $task->setDueDate(null);
-            $task->setDueDaysFromEntry(null);
         }
 
         // Reset assignments
@@ -135,6 +137,8 @@ class TaskService
         $task->setActionType($actionType);
         $task->setApiUrl($request->request->get('apiUrl'));
 
+        $task->setEmailTemplate(null);
+
         if (Task::ACTION_EMAIL === $actionType) {
             $template = $request->request->get('emailTemplate');
             $uploadedFile = $request->files->get('emailTemplateFile');
@@ -142,13 +146,13 @@ class TaskService
                 // Validate file size (e.g., max 2MB)
                 $maxFileSize = 2 * 1024 * 1024; // 2MB
                 if ($uploadedFile->getSize() > $maxFileSize) {
-                    throw new \RuntimeException('Uploaded file exceeds the maximum allowed size of 2MB.');
+                    throw new RuntimeException('Uploaded file exceeds the maximum allowed size of 2MB.');
                 }
 
                 // Validate MIME type (e.g., allow only text/plain or text/html)
                 $allowedMimeTypes = ['text/plain', 'text/html'];
                 if (!in_array($uploadedFile->getMimeType(), $allowedMimeTypes, true)) {
-                    throw new \RuntimeException('Uploaded file type is not allowed.');
+                    throw new RuntimeException('Uploaded file type is not allowed.');
                 }
 
                 // Optionally scan for malicious content (e.g., using an external library or service)
@@ -157,9 +161,8 @@ class TaskService
                 // Read file contents after validation
                 $template = file_get_contents($uploadedFile->getPathname());
             }
+
             $task->setEmailTemplate($template);
-        } else {
-            $task->setEmailTemplate(null);
         }
     }
 }
