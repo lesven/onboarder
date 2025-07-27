@@ -223,6 +223,13 @@ class ProcessTasksCommand extends Command
             $responseContent = $response->getContent();
             $io->writeln(sprintf('API Response: %s', substr($responseContent, 0, 200)));
             $io->success('API call completed successfully');
+            
+            // Markiere Task als abgeschlossen
+            $task->setCompletedAt(new \DateTimeImmutable());
+            $this->entityManager->persist($task);
+            $this->entityManager->flush();
+            $io->writeln('Task marked as completed');
+            
             return true;
         } else {
             $io->error(sprintf('API call failed with status %d', $statusCode));
@@ -242,6 +249,13 @@ class ProcessTasksCommand extends Command
         
         if ($statusCode >= 200 && $statusCode < 300) {
             $io->success('API call completed successfully');
+            
+            // Markiere Task als abgeschlossen
+            $task->setCompletedAt(new \DateTimeImmutable());
+            $this->entityManager->persist($task);
+            $this->entityManager->flush();
+            $io->writeln('Task marked as completed');
+            
             return true;
         } else {
             $io->error(sprintf('API call failed with status %d', $statusCode));
