@@ -105,9 +105,6 @@ class OnboardingTask
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $completedAt = null;
 
-    #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $emailSentAt = null;
-
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -415,18 +412,6 @@ class OnboardingTask
     public function setCompletedAt(?\DateTimeImmutable $completedAt): static
     {
         $this->completedAt = $completedAt;
-
-        return $this;
-    }
-
-    public function getEmailSentAt(): ?\DateTimeImmutable
-    {
-        return $this->emailSentAt;
-    }
-
-    public function setEmailSentAt(?\DateTimeImmutable $emailSentAt): static
-    {
-        $this->emailSentAt = $emailSentAt;
 
         return $this;
     }

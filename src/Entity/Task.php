@@ -542,18 +542,6 @@ class Task
         return $this;
     }
 
-    public function getEmailSentAt(): ?\DateTimeImmutable
-    {
-        return $this->emailSentAt;
-    }
-
-    public function setEmailSentAt(?\DateTimeImmutable $emailSentAt): static
-    {
-        $this->emailSentAt = $emailSentAt;
-
-        return $this;
-    }
-
     public function getReminderSentAt(): ?\DateTimeImmutable
     {
         return $this->reminderSentAt;

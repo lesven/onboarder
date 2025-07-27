@@ -1,20 +1,5 @@
 <?php
 
-namespace App\Command;
-
-// Override exec within this namespace for testing
-function exec(string $command, ?array &$output = null, ?int &$exitCode = null): void
-{
-    \App\Tests\Command\ProcessTasksCommandTest::recordExec($command, $output, $exitCode);
-}
-
-namespace App\Entity\Action;
-
-function exec(string $command, ?array &$output = null, ?int &$exitCode = null): void
-{
-    \App\Tests\Command\ProcessTasksCommandTest::recordExec($command, $output, $exitCode);
-}
-
 namespace App\Tests\Command;
 
 use App\Command\ProcessTasksCommand;
@@ -30,16 +15,6 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class ProcessTasksCommandTest extends TestCase
 {
-    private static array $execCommands = [];
-    private static int $nextExitCode = 0;
-
-    public static function recordExec(string $command, ?array &$output = null, ?int &$exitCode = null): void
-    {
-        self::$execCommands[] = $command;
-        $output = ['ok'];
-        $exitCode = self::$nextExitCode;
-    }
-
     private EntityManagerInterface $em;
     private EmailService $emailService;
     private OnboardingTaskRepository $repo;
@@ -49,9 +24,6 @@ class ProcessTasksCommandTest extends TestCase
 
     protected function setUp(): void
     {
-        self::$execCommands = [];
-        self::$nextExitCode = 0;
-
         $this->em = $this->createMock(EntityManagerInterface::class);
         $this->emailService = $this->createMock(EmailService::class);
         $this->repo = $this->createMock(OnboardingTaskRepository::class);
