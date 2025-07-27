@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Entity\OnboardingTask;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
+use DateTimeImmutable;
 
 /**
  * Verantwortlich für das Abfragen und Filtern von OnboardingTasks.
@@ -22,18 +23,18 @@ class TaskQueryService
      */
     public function getFilteredTasks(string $status = '', string $employee = '', string $assignee = ''): array
     {
-        $qb = $this->entityManager->getRepository(OnboardingTask::class)
+        $queryBuilder = $this->entityManager->getRepository(OnboardingTask::class)
             ->createQueryBuilder('ot')
             ->leftJoin('ot.onboarding', 'o')
             ->leftJoin('ot.taskBlock', 'tb')
             ->leftJoin('ot.assignedRole', 'r')
             ->addSelect('o', 'tb', 'r');
 
-        $this->applyStatusFilter($qb, $status);
-        $this->applyEmployeeFilter($qb, $employee);
-        $this->applyAssigneeFilter($qb, $assignee);
+        $this->applyStatusFilter($queryBuilder, $status);
+        $this->applyEmployeeFilter($queryBuilder, $employee);
+        $this->applyAssigneeFilter($queryBuilder, $assignee);
 
-        return $qb->orderBy('ot.dueDate', 'ASC')
+        return $queryBuilder->orderBy('ot.dueDate', 'ASC')
             ->addOrderBy('ot.sortOrder', 'ASC')
             ->getQuery()
             ->getResult();
@@ -42,17 +43,17 @@ class TaskQueryService
     /**
      * Wendet Statusfilter an.
      */
-    private function applyStatusFilter(QueryBuilder $qb, string $status): void
+    private function applyStatusFilter(QueryBuilder $queryBuilder, string $status): void
     {
         if ('completed' === $status) {
-            $qb->where('ot.status = :completed')
+            $queryBuilder->where('ot.status = :completed')
                ->setParameter('completed', OnboardingTask::STATUS_COMPLETED);
         } elseif ('overdue' === $status) {
-            $qb->where('ot.status != :completed AND ot.dueDate < :now')
+            $queryBuilder->where('ot.status != :completed AND ot.dueDate < :now')
                ->setParameter('completed', OnboardingTask::STATUS_COMPLETED)
-               ->setParameter('now', new \DateTimeImmutable());
+               ->setParameter('now', new DateTimeImmutable());
         } elseif ('all' !== $status) {
-            $qb->where('ot.status != :completed')
+            $queryBuilder->where('ot.status != :completed')
                ->setParameter('completed', OnboardingTask::STATUS_COMPLETED);
         }
     }
@@ -60,10 +61,10 @@ class TaskQueryService
     /**
      * Wendet Mitarbeiterfilter an.
      */
-    private function applyEmployeeFilter(QueryBuilder $qb, string $employee): void
+    private function applyEmployeeFilter(QueryBuilder $queryBuilder, string $employee): void
     {
         if ($employee) {
-            $qb->andWhere('o.firstName LIKE :employee OR o.lastName LIKE :employee')
+            $queryBuilder->andWhere('o.firstName LIKE :employee OR o.lastName LIKE :employee')
                ->setParameter('employee', '%'.$employee.'%');
         }
     }
@@ -71,10 +72,10 @@ class TaskQueryService
     /**
      * Wendet Zuständigkeitsfilter an.
      */
-    private function applyAssigneeFilter(QueryBuilder $qb, string $assignee): void
+    private function applyAssigneeFilter(QueryBuilder $queryBuilder, string $assignee): void
     {
         if ($assignee) {
-            $qb->andWhere('r.name LIKE :assignee OR ot.assignedEmail LIKE :assignee')
+            $queryBuilder->andWhere('r.name LIKE :assignee OR ot.assignedEmail LIKE :assignee')
                ->setParameter('assignee', '%'.$assignee.'%');
         }
     }
