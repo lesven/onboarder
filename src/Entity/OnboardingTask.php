@@ -75,7 +75,7 @@ class OnboardingTask
 
     // Referenz zur ursprünglichen Vorlage
     #[ORM\ManyToOne(targetEntity: Task::class)]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\JoinColumn(name: 'template_task_id', referencedColumnName: 'id', nullable: true)]
     private ?Task $templateTask = null;
 
     #[ORM\ManyToOne(targetEntity: TaskBlock::class)]

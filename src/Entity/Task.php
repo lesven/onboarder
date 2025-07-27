@@ -27,7 +27,7 @@ class Task
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $taskId = null;
+    private ?int $id = null;
 
     #[ORM\Column(length: 255)]
     private ?string $title = null;
@@ -100,7 +100,11 @@ class Task
      * @var Collection<int, self>
      */
     #[ORM\ManyToMany(targetEntity: self::class, inversedBy: 'dependentTasks')]
-    #[ORM\JoinTable(name: 'task_dependencies')]
+    #[ORM\JoinTable(
+        name: 'task_dependencies',
+        joinColumns: [new ORM\JoinColumn(name: 'task_id', referencedColumnName: 'id')],
+        inverseJoinColumns: [new ORM\JoinColumn(name: 'depends_on_task_id', referencedColumnName: 'id')]
+    )]
     private Collection $dependencies;
 
     /**
@@ -130,9 +134,9 @@ class Task
         $this->dependentTasks = new ArrayCollection();
     }
 
-    public function getTaskId(): ?int
+    public function getId(): ?int
     {
-        return $this->taskId;
+        return $this->id;
     }
 
     public function getTitle(): ?string
