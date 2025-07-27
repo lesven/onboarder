@@ -109,21 +109,19 @@
             </div>
             
             <div class="col-md-4">
-                <!-- E-Mail-Konfiguration -->
+                <!-- Aktion -->
                 <div class="card mb-3">
                     <div class="card-header">
-                        <h5 class="card-title mb-0">E-Mail-Benachrichtigung</h5>
+                        <h5 class="card-title mb-0">Aktion bei Fälligkeit</h5>
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="sendEmail" name="sendEmail" 
-                                       {% if task and task.emailTemplate %}checked{% endif %}>
-                                <label class="form-check-label" for="sendEmail">
-                                    E-Mail-Benachrichtigung senden
-                                </label>
-                            </div>
-                            <div class="form-text">Wenn aktiviert, wird zur Fälligkeit der Aufgabe eine E-Mail versendet.</div>
+                            <label for="actionType" class="form-label">Aktion</label>
+                            <select class="form-select" id="actionType" name="actionType">
+                                <option value="none" {% if not task or task.actionType == 'none' %}selected{% endif %}>Keine Aktion</option>
+                                <option value="email" {% if task and task.actionType == 'email' %}selected{% endif %}>E-Mail senden</option>
+                                <option value="api" {% if task and task.actionType == 'api' %}selected{% endif %}>API Call (CURL)</option>
+                            </select>
                         </div>
                         
                         <div class="mb-3" id="emailTemplateGroup" style="display: none;">
@@ -133,13 +131,41 @@
 
                             <label for="emailTemplate" class="form-label mt-3">E-Mail-Template</label>
                             <textarea class="form-control" id="emailTemplate" name="emailTemplate" rows="4" placeholder="HTML-Template für die E-Mail...">{{ task ? task.emailTemplate : '' }}</textarea>
-                            <div class="form-text">Verwenden Sie Variablen wie: <br>
-                            <p>Hallo {{ '{{manager}}' }} mit der email {{ '{{managerEmail}}' }},<br>
-dein neuer kollege {{ '{{firstName}}' }} {{ '{{lastName}}' }} fängt am {{ '{{entryDate}}' }} bei euch an. <br>
-sein Buddy ist {{ '{{buddy}}' }} {{ '{{buddyEmail}}' }} und seine Onboarding Id lautet {{ '{{onboardingId}}' }}<br>
-Hier ist der link zum onboarding {{ '{{onboardingLink}}' }}
-</p>
                             
+                            <div class="form-text">
+                                <strong>Verfügbare Variablen:</strong><br>
+                                <div class="row mt-2">
+                                    <div class="col-md-6">
+                                        <small>
+                                            <code>{{ '{{firstName}}' }}</code> - Vorname des Mitarbeiters<br>
+                                            <code>{{ '{{lastName}}' }}</code> - Nachname des Mitarbeiters<br>
+                                            <code>{{ '{{entryDate}}' }}</code> - Eintrittsdatum (YYYY-MM-DD)<br>
+                                            <code>{{ '{{manager}}' }}</code> - Name der Führungskraft<br>
+                                            <code>{{ '{{managerEmail}}' }}</code> - E-Mail der Führungskraft<br>
+                                            <code>{{ '{{buddy}}' }}</code> - Name des Buddys
+                                        </small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <small>
+                                            <code>{{ '{{buddyEmail}}' }}</code> - E-Mail des Buddys<br>
+                                            <code>{{ '{{onboardingId}}' }}</code> - ID des Onboardings<br>
+                                            <code>{{ '{{taskId}}' }}</code> - ID der Aufgabe<br>
+                                            <code>{{ '{{onboardingLink}}' }}</code> - Link zum Onboarding<br>
+                                            <code>{{ '{{taskCompleteLink}}' }}</code> - Link zum Task abschließen
+                                        </small>
+                                    </div>
+                                </div>
+                                
+                                <div class="alert alert-info mt-2">
+                                    <strong>Beispiel E-Mail-Template:</strong><br>
+                                    <code style="font-size: 0.85em;">
+                                        Hallo {{ '{{manager}}' }},<br><br>
+                                        dein neuer Kollege {{ '{{firstName}}' }} {{ '{{lastName}}' }} fängt am {{ '{{entryDate}}' }} an.<br>
+                                        Sein Buddy ist {{ '{{buddy}}' }} ({{ '{{buddyEmail}}' }}).<br><br>
+                                        <a href="{{ '{{onboardingLink}}' }}">Zum Onboarding</a><br>
+                                        <a href="{{ '{{taskCompleteLink}}' }}">Aufgabe als erledigt markieren</a>
+                                    </code>
+                                </div>
                             </div>
 
                             {% if task and task.emailTemplate %}
@@ -147,6 +173,34 @@ Hier ist der link zum onboarding {{ '{{onboardingLink}}' }}
                                     <i class="bi bi-download"></i> Aktuelles Template herunterladen
                                 </a>
                             {% endif %}
+                        </div>
+
+                        <div class="mb-3" id="apiCallGroup" style="display:none;">
+                            <label for="apiUrl" class="form-label">CURL-Befehl</label>
+                            <textarea class="form-control" id="apiUrl" name="apiUrl" rows="3" placeholder="curl ...">{{ task ? task.apiUrl : '' }}</textarea>
+                            <div class="form-text">
+                                <strong>Verfügbare Variablen (URL-encodiert):</strong><br>
+                                Alle E-Mail-Variablen können auch hier verwendet werden und werden automatisch URL-encodiert.
+                                
+                                <div class="alert alert-info mt-2">
+                                    <strong>Beispiel API-Call:</strong><br>
+                                    <code style="font-size: 0.85em;">
+                                        curl -X POST "https://api.example.com/onboarding" \<br>
+                                        &nbsp;&nbsp;-H "Content-Type: application/json" \<br>
+                                        &nbsp;&nbsp;-H "Authorization: Bearer YOUR_API_KEY" \<br>
+                                        &nbsp;&nbsp;-d '{<br>
+                                        &nbsp;&nbsp;&nbsp;&nbsp;"employee": "{{ '{{firstName}}' }} {{ '{{lastName}}' }}",<br>
+                                        &nbsp;&nbsp;&nbsp;&nbsp;"entryDate": "{{ '{{entryDate}}' }}",<br>
+                                        &nbsp;&nbsp;&nbsp;&nbsp;"manager": "{{ '{{manager}}' }}",<br>
+                                        &nbsp;&nbsp;&nbsp;&nbsp;"onboardingId": {{ '{{onboardingId}}' }}<br>
+                                        &nbsp;&nbsp;}'
+                                    </code>
+                                </div>
+                                
+                                <div class="alert alert-warning mt-2">
+                                    <small><strong>Hinweis:</strong> Alle Variablen werden automatisch URL-encodiert. Verwenden Sie diese für sichere API-Aufrufe.</small>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -184,16 +238,18 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     toggleDueDateGroups(); // Initial call
     
-    // E-Mail Toggle
-    const sendEmailCheckbox = document.getElementById('sendEmail');
+    const actionSelect = document.getElementById('actionType');
     const emailTemplateGroup = document.getElementById('emailTemplateGroup');
-    
-    function toggleEmailTemplate() {
-        emailTemplateGroup.style.display = sendEmailCheckbox.checked ? 'block' : 'none';
+    const apiCallGroup = document.getElementById('apiCallGroup');
+
+    function toggleActionFields() {
+        const val = actionSelect.value;
+        emailTemplateGroup.style.display = val === 'email' ? 'block' : 'none';
+        apiCallGroup.style.display = val === 'api' ? 'block' : 'none';
     }
-    
-    sendEmailCheckbox.addEventListener('change', toggleEmailTemplate);
-    toggleEmailTemplate(); // Initial call
+
+    actionSelect.addEventListener('change', toggleActionFields);
+    toggleActionFields();
 });
 </script>
 {% endblock %}

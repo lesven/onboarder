@@ -65,8 +65,8 @@ class OnboardingTaskRepository extends ServiceEntityRepository
     }
 
     /**
-     * Findet alle Tasks, deren E-Mail heute versendet werden soll.
-     * Berücksichtigt sowohl heute fällige als auch überfällige Tasks, die noch nicht versendet wurden.
+     * Findet alle Tasks, die heute eine Aktion ausführen sollen.
+     * Berücksichtigt überfällige Tasks, bei denen die Aktion noch nicht erfolgt ist.
      */
     public function findTasksDueForDate(\DateTimeImmutable $date): array
     {
@@ -75,13 +75,13 @@ class OnboardingTaskRepository extends ServiceEntityRepository
 
         return $this->createQueryBuilder('ot')
             ->leftJoin('ot.onboarding', 'o')
-            ->where('ot.sendEmail = true')
-            ->andWhere('ot.emailTemplate IS NOT NULL')
+            ->where('ot.actionType != :none')
             ->andWhere('ot.emailSentAt IS NULL')
             ->andWhere('(
                 (ot.dueDate IS NOT NULL AND ot.dueDate < :end) OR
                 (ot.dueDate IS NULL AND ot.dueDaysFromEntry IS NOT NULL AND DATE_ADD(o.entryDate, ot.dueDaysFromEntry, \'DAY\') < :end)
             )')
+            ->setParameter('none', OnboardingTask::ACTION_NONE)
             ->setParameter('end', $end)
             ->orderBy('ot.dueDate', 'ASC')
             ->getQuery()

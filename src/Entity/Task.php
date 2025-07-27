@@ -19,6 +19,10 @@ class Task
     public const EMAIL_TRIGGER_RELATIVE_DATE = 'relative_date';
     public const EMAIL_TRIGGER_MANUAL = 'manual';
 
+    public const ACTION_NONE = 'none';
+    public const ACTION_EMAIL = 'email';
+    public const ACTION_API = 'api';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -58,6 +62,12 @@ class Task
 
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $emailTemplate = null;
+
+    #[ORM\Column(length: 50)]
+    private string $actionType = self::ACTION_NONE;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $apiUrl = null;
 
     // Erinnerungsmail
     #[ORM\Column]
@@ -319,6 +329,30 @@ class Task
     public function setEmailTemplate(?string $emailTemplate): static
     {
         $this->emailTemplate = $emailTemplate;
+
+        return $this;
+    }
+
+    public function getActionType(): string
+    {
+        return $this->actionType;
+    }
+
+    public function setActionType(string $actionType): static
+    {
+        $this->actionType = $actionType;
+
+        return $this;
+    }
+
+    public function getApiUrl(): ?string
+    {
+        return $this->apiUrl;
+    }
+
+    public function setApiUrl(?string $apiUrl): static
+    {
+        $this->apiUrl = $apiUrl;
 
         return $this;
     }
