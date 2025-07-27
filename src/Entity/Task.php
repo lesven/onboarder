@@ -130,7 +130,7 @@ class Task
         $this->dependentTasks = new ArrayCollection();
     }
 
-    public function getId(): ?int
+    public function getTaskId(): ?int
     {
         return $this->taskId;
     }
