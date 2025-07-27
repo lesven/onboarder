@@ -6,6 +6,7 @@ use App\Repository\TaskRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use DateTimeImmutable;
 
 #[ORM\Entity(repositoryClass: TaskRepository::class)]
 class Task
@@ -26,7 +27,7 @@ class Task
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id = null;
+    private ?int $taskId = null;
 
     #[ORM\Column(length: 255)]
     private ?string $title = null;
@@ -42,7 +43,7 @@ class Task
 
     // Fälligkeit
     #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $dueDate = null;
+    private ?DateTimeImmutable $dueDate = null;
 
     #[ORM\Column(nullable: true)]
     private ?int $dueDaysFromEntry = null;
@@ -52,10 +53,10 @@ class Task
     private string $emailTrigger = self::EMAIL_TRIGGER_MANUAL;
 
     #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $emailSendDate = null;
+    private ?DateTimeImmutable $emailSendDate = null;
 
     #[ORM\Column(nullable: true)]
-    private ?int $emailSendDaysFromEntry = null;
+    private ?int $emailDelayDays = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $assignedEmail = null;
@@ -74,10 +75,10 @@ class Task
     private bool $hasReminder = false;
 
     #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $reminderSendDate = null;
+    private ?DateTimeImmutable $reminderSendDate = null;
 
     #[ORM\Column(nullable: true)]
-    private ?int $reminderSendDaysFromEntry = null;
+    private ?int $reminderDelayDays = null;
 
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $reminderTemplate = null;
@@ -110,31 +111,28 @@ class Task
 
     // Zeitstempel
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $updatedAt = null;
+    private ?DateTimeImmutable $updatedAt = null;
 
     #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $completedAt = null;
+    private ?DateTimeImmutable $completedAt = null;
 
     #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $emailSentAt = null;
-
-    #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $reminderSentAt = null;
+    private ?DateTimeImmutable $reminderSentAt = null;
 
     public function __construct()
     {
-        $this->createdAt = new \DateTimeImmutable();
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
         $this->dependencies = new ArrayCollection();
         $this->dependentTasks = new ArrayCollection();
     }
 
-    public function getId(): ?int
+    public function getTaskId(): ?int
     {
-        return $this->id;
+        return $this->taskId;
     }
 
     public function getTitle(): ?string
@@ -193,17 +191,17 @@ class Task
     public function markAsCompleted(): static
     {
         $this->status = self::STATUS_COMPLETED;
-        $this->completedAt = new \DateTimeImmutable();
+        $this->completedAt = new DateTimeImmutable();
 
         return $this;
     }
 
-    public function getDueDate(): ?\DateTimeImmutable
+    public function getDueDate(): ?DateTimeImmutable
     {
         return $this->dueDate;
     }
 
-    public function setDueDate(?\DateTimeImmutable $dueDate): static
+    public function setDueDate(?DateTimeImmutable $dueDate): static
     {
         $this->dueDate = $dueDate;
 
@@ -225,7 +223,7 @@ class Task
     /**
      * Berechnet das finale Fälligkeitsdatum basierend auf Eintrittsdatum oder festem Datum.
      */
-    public function getCalculatedDueDate(): ?\DateTimeImmutable
+    public function getCalculatedDueDate(): ?DateTimeImmutable
     {
         if ($this->dueDate) {
             return $this->dueDate;
@@ -250,26 +248,26 @@ class Task
         return $this;
     }
 
-    public function getEmailSendDate(): ?\DateTimeImmutable
+    public function getEmailSendDate(): ?DateTimeImmutable
     {
         return $this->emailSendDate;
     }
 
-    public function setEmailSendDate(?\DateTimeImmutable $emailSendDate): static
+    public function setEmailSendDate(?DateTimeImmutable $emailSendDate): static
     {
         $this->emailSendDate = $emailSendDate;
 
         return $this;
     }
 
-    public function getEmailSendDaysFromEntry(): ?int
+    public function getEmailDelayDays(): ?int
     {
-        return $this->emailSendDaysFromEntry;
+        return $this->emailDelayDays;
     }
 
-    public function setEmailSendDaysFromEntry(?int $emailSendDaysFromEntry): static
+    public function setEmailDelayDays(?int $emailDelayDays): static
     {
-        $this->emailSendDaysFromEntry = $emailSendDaysFromEntry;
+        $this->emailDelayDays = $emailDelayDays;
 
         return $this;
     }
@@ -277,16 +275,16 @@ class Task
     /**
      * Berechnet das finale E-Mail-Versanddatum.
      */
-    public function getCalculatedEmailSendDate(): ?\DateTimeImmutable
+    public function getCalculatedEmailSendDate(): ?DateTimeImmutable
     {
         switch ($this->emailTrigger) {
             case self::EMAIL_TRIGGER_IMMEDIATE:
-                return $this->onboarding ? $this->onboarding->getCreatedAt() : new \DateTimeImmutable();
+                return $this->onboarding ? $this->onboarding->getCreatedAt() : new DateTimeImmutable();
             case self::EMAIL_TRIGGER_FIXED_DATE:
                 return $this->emailSendDate;
             case self::EMAIL_TRIGGER_RELATIVE_DATE:
-                if (null !== $this->emailSendDaysFromEntry && $this->onboarding && $this->onboarding->getEntryDate()) {
-                    return $this->onboarding->getEntryDate()->modify('+'.$this->emailSendDaysFromEntry.' days');
+                if (null !== $this->emailDelayDays && $this->onboarding && $this->onboarding->getEntryDate()) {
+                    return $this->onboarding->getEntryDate()->modify('+'.$this->emailDelayDays.' days');
                 }
                 break;
             case self::EMAIL_TRIGGER_MANUAL:
@@ -369,26 +367,26 @@ class Task
         return $this;
     }
 
-    public function getReminderSendDate(): ?\DateTimeImmutable
+    public function getReminderSendDate(): ?DateTimeImmutable
     {
         return $this->reminderSendDate;
     }
 
-    public function setReminderSendDate(?\DateTimeImmutable $reminderSendDate): static
+    public function setReminderSendDate(?DateTimeImmutable $reminderSendDate): static
     {
         $this->reminderSendDate = $reminderSendDate;
 
         return $this;
     }
 
-    public function getReminderSendDaysFromEntry(): ?int
+    public function getReminderDelayDays(): ?int
     {
-        return $this->reminderSendDaysFromEntry;
+        return $this->reminderDelayDays;
     }
 
-    public function setReminderSendDaysFromEntry(?int $reminderSendDaysFromEntry): static
+    public function setReminderDelayDays(?int $reminderDelayDays): static
     {
-        $this->reminderSendDaysFromEntry = $reminderSendDaysFromEntry;
+        $this->reminderDelayDays = $reminderDelayDays;
 
         return $this;
     }
@@ -506,48 +504,48 @@ class Task
         return true;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
 
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeImmutable
+    public function getUpdatedAt(): ?DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    public function setUpdatedAt(DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
 
         return $this;
     }
 
-    public function getCompletedAt(): ?\DateTimeImmutable
+    public function getCompletedAt(): ?DateTimeImmutable
     {
         return $this->completedAt;
     }
 
-    public function setCompletedAt(?\DateTimeImmutable $completedAt): static
+    public function setCompletedAt(?DateTimeImmutable $completedAt): static
     {
         $this->completedAt = $completedAt;
 
         return $this;
     }
 
-    public function getReminderSentAt(): ?\DateTimeImmutable
+    public function getReminderSentAt(): ?DateTimeImmutable
     {
         return $this->reminderSentAt;
     }
 
-    public function setReminderSentAt(?\DateTimeImmutable $reminderSentAt): static
+    public function setReminderSentAt(?DateTimeImmutable $reminderSentAt): static
     {
         $this->reminderSentAt = $reminderSentAt;
 
