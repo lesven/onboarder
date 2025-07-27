@@ -1,24 +1,43 @@
-.PHONY: help start stop install setup shell console logs clean migration migrate phpstan
+.PHONY: help build start stop restart install setup shell console logs clean migration migrate phpstan
+
+# Default environment is development. Override by running `make <target> ENV=prod`
+ENV ?= dev
+ifeq ($(ENV),prod)
+APP_DEBUG=0
+else
+APP_DEBUG=1
+endif
+export APP_ENV=$(ENV)
+export APP_DEBUG
 
 # Docker Compose Command (kann für CI überschrieben werden)
 DOCKER_COMPOSE := docker compose
 
 help: ## Zeigt verfügbare Befehle
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
+	@echo "Verfügbare Befehle:"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
+
+build: ## Baut Docker Container
+	$(DOCKER_COMPOSE) build
 
 start: ## Startet Docker Container
 	$(DOCKER_COMPOSE) up -d
 
 stop: ## Stoppt Docker Container
 	$(DOCKER_COMPOSE) down
-deploy:
-	git pull
-	make install
+
+restart: ## Neustart der Docker Container
+	$(DOCKER_COMPOSE) restart
+
+deploy: ## Führt alle Schritte für die Bereitstellung aus
 	git reset --hard HEAD
+	git pull
+	@$(MAKE) build
+	@$(MAKE) install
 
 install: ## Baut Container, installiert Abhängigkeiten und führt Setup aus
 	$(DOCKER_COMPOSE) up -d --build
-	$(DOCKER_COMPOSE) exec app composer install --no-interaction
+	$(DOCKER_COMPOSE) exec -e APP_ENV=$(ENV) -e APP_DEBUG=$(APP_DEBUG) app composer install $(if $(filter $(ENV),prod),--no-dev --optimize-autoloader,--no-interaction)
 	@echo "Prüfe ob bin/console existiert..."
 	$(DOCKER_COMPOSE) exec --workdir /var/www/html app test -f bin/console && echo "bin/console gefunden" || echo "bin/console nicht gefunden"
 	@echo "Räume Cache manuell auf..."
@@ -28,8 +47,9 @@ install: ## Baut Container, installiert Abhängigkeiten und führt Setup aus
 	make setup-direct
 
 cache: ## Leert den Symfony Cache
-	$(DOCKER_COMPOSE) exec app php bin/console cache:clear
-fix:
+	$(DOCKER_COMPOSE) exec -e APP_ENV=$(ENV) -e APP_DEBUG=$(APP_DEBUG) app php bin/console cache:clear
+
+fix: ## Führt PHP-CS-Fixer aus und korrigiert Code-Style
 	$(DOCKER_COMPOSE) exec app /usr/local/bin/php-cs-fixer fix --diff --allow-risky=yes
 	@echo "CS Fixer abgeschlossen!"
 setup: ## Führt das Setup-Skript aus (nach erstem Start)
