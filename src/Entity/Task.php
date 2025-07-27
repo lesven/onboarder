@@ -66,7 +66,7 @@ class Task
     #[ORM\Column(length: 50)]
     private string $actionType = self::ACTION_NONE;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(type: 'text', nullable: true)]
     private ?string $apiUrl = null;
 
     // Erinnerungsmail
