@@ -25,6 +25,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class ProcessTasksCommandTest extends TestCase
 {
@@ -41,6 +43,7 @@ class ProcessTasksCommandTest extends TestCase
     private EntityManagerInterface $em;
     private EmailService $emailService;
     private OnboardingTaskRepository $repo;
+    private HttpClientInterface $httpClient;
     private CommandTester $tester;
     private ProcessTasksCommand $command;
 
@@ -52,46 +55,66 @@ class ProcessTasksCommandTest extends TestCase
         $this->em = $this->createMock(EntityManagerInterface::class);
         $this->emailService = $this->createMock(EmailService::class);
         $this->repo = $this->createMock(OnboardingTaskRepository::class);
+        $this->httpClient = $this->createMock(HttpClientInterface::class);
 
         $this->em->method('getRepository')->with(OnboardingTask::class)->willReturn($this->repo);
 
-        $this->command = new ProcessTasksCommand($this->em, $this->emailService);
+        $this->command = new ProcessTasksCommand($this->repo, $this->emailService, $this->em, $this->httpClient);
         $this->tester = new CommandTester($this->command);
     }
 
     public function testExecuteProcessesEmailAndApiTasks(): void
     {
-        $taskEmail = (new OnboardingTask());
-        $emailAction = (new \App\Entity\Action\EmailAction())
-            ->setAssignedEmail('a@example.com')
-            ->setEmailTemplate('tpl');
-        $taskEmail->setTaskAction($emailAction);
+        $date = new \DateTimeImmutable('2025-07-27');
+        
+        // Create email task
+        $taskEmail = new OnboardingTask();
+        $taskEmail->setTitle('Email Task');
+        $taskEmail->setActionType('email');
+        $taskEmail->setEmailTemplate('Hello {{firstName}}');
+        $taskEmail->setAssignedEmail('test@example.com');
 
-        $taskApi = (new OnboardingTask());
-        $apiAction = (new \App\Entity\Action\ApiCallAction())
-            ->setApiUrl('curl http://example.com');
-        $taskApi->setTaskAction($apiAction);
+        // Create API task
+        $taskApi = new OnboardingTask();
+        $taskApi->setTitle('API Task');
+        $taskApi->setActionType('api');
+        $taskApi->setApiUrl('http://example.com/api');
 
-        $this->repo->method('findTasksDueForDate')->willReturn([$taskEmail, $taskApi]);
+        $this->repo->method('findTasksDueForDate')
+            ->with($this->callback(function($arg) use ($date) {
+                return $arg->format('Y-m-d') === $date->format('Y-m-d');
+            }))
+            ->willReturn([$taskEmail, $taskApi]);
 
+        // Mock email service
         $this->emailService->expects($this->once())
             ->method('renderTemplate')
-            ->willReturn('content');
+            ->with('Hello {{firstName}}', $taskEmail)
+            ->willReturn('Hello John');
+            
         $this->emailService->expects($this->once())
-            ->method('sendEmail');
-        $this->emailService->expects($this->once())
-            ->method('renderUrlEncodedTemplate')
-            ->with('curl http://example.com', $taskApi)
-            ->willReturn('curl http://example.com');
+            ->method('sendEmail')
+            ->with('test@example.com', 'Email Task', 'Hello John');
 
+        // Mock HTTP client for API call
+        $mockResponse = $this->createMock(ResponseInterface::class);
+        $mockResponse->method('getStatusCode')->willReturn(200);
+        $mockResponse->method('getContent')->willReturn('{"success": true}');
+        
+        $this->httpClient->expects($this->once())
+            ->method('request')
+            ->with('GET', 'http://example.com/api')
+            ->willReturn($mockResponse);
+
+        $this->em->expects($this->once())->method('persist');
         $this->em->expects($this->once())->method('flush');
 
-        $exit = $this->tester->execute([]);
+        $exit = $this->tester->execute(['date' => '2025-07-27']);
 
         $this->assertSame(Command::SUCCESS, $exit);
-        $this->assertStringContainsString('2 Tasks verarbeitet.', $this->tester->getDisplay());
-        $this->assertCount(1, self::$execCommands);
-        $this->assertSame('curl http://example.com', self::$execCommands[0]);
+        $display = $this->tester->getDisplay();
+        $this->assertStringContainsString('Found 2 tasks to process', $display);
+        $this->assertStringContainsString('Processed: 2, Errors: 0', $display);
     }
 
     public function testCommandMetadata(): void
