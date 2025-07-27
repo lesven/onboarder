@@ -158,10 +158,8 @@ class TaskService
                 $template = file_get_contents($uploadedFile->getPathname());
             }
             $task->setEmailTemplate($template);
-            $task->setSendEmail(true);
         } else {
             $task->setEmailTemplate(null);
-            $task->setSendEmail(false);
         }
     }
 }
