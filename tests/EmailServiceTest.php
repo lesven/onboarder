@@ -50,4 +50,73 @@ class EmailServiceTest extends TestCase
             $result
         );
     }
+
+    public function testRenderUrlEncodedTemplateDoesNotEncodeEmails(): void
+    {
+        $parameterBag = new ParameterBag(['kernel.secret' => 'test-secret-key']);
+        $urlGenerator = $this->createMock(\Symfony\Component\Routing\Generator\UrlGeneratorInterface::class);
+        $urlGenerator->method('generate')->willReturn('http://example.com');
+
+        $service = new EmailService(
+            $this->createMock(EntityManagerInterface::class),
+            new PasswordEncryptionService($parameterBag),
+            $urlGenerator
+        );
+
+        $onboarding = new Onboarding();
+        $onboarding->setFirstName('Max Müller'); // Name mit Umlaut für URL-Codierung
+        $onboarding->setManager('Chef Manager'); // Manager setzen
+        $onboarding->setBuddy('Buddy Name'); // Buddy setzen 
+        $onboarding->setManagerEmail('manager@example.com');
+        $onboarding->setBuddyEmail('buddy@test.org');
+
+        $task = new OnboardingTask();
+        $task->setOnboarding($onboarding);
+
+        // Template mit E-Mail-Adressen und Namen
+        $template = 'curl -X POST "https://api.example.com/user" -d "name={{firstName}}&manager={{managerEmail}}&buddy={{buddyEmail}}"';
+        $result = $service->renderUrlEncodedTemplate($template, $task);
+
+        // Namen sollten URL-codiert sein
+        $this->assertStringContainsString('Max%20M%C3%BCller', $result);
+        
+        // E-Mail-Adressen sollten NICHT URL-codiert sein
+        $this->assertStringContainsString('manager@example.com', $result);
+        $this->assertStringContainsString('buddy@test.org', $result);
+        
+        // Stelle sicher, dass keine URL-codierten E-Mails vorhanden sind
+        $this->assertStringNotContainsString('manager%40example.com', $result);
+        $this->assertStringNotContainsString('buddy%40test.org', $result);
+    }
+
+    public function testRenderUrlEncodedTemplateWithEncodedEmailVariants(): void
+    {
+        $parameterBag = new ParameterBag(['kernel.secret' => 'test-secret-key']);
+        $urlGenerator = $this->createMock(\Symfony\Component\Routing\Generator\UrlGeneratorInterface::class);
+        $urlGenerator->method('generate')->willReturn('http://example.com');
+
+        $service = new EmailService(
+            $this->createMock(EntityManagerInterface::class),
+            new PasswordEncryptionService($parameterBag),
+            $urlGenerator
+        );
+
+        $onboarding = new Onboarding();
+        $onboarding->setManager('Chef Manager'); // Manager setzen
+        $onboarding->setBuddy('Buddy Name'); // Buddy setzen
+        $onboarding->setManagerEmail('manager@example.com');
+
+        $task = new OnboardingTask();
+        $task->setOnboarding($onboarding);
+
+        // Template mit normaler und URL-codierter E-Mail-Variable
+        $template = 'Normal: {{managerEmail}}, URL-codiert: {{managerEmailEncoded}}';
+        $result = $service->renderUrlEncodedTemplate($template, $task);
+
+        // Normale Version sollte nicht URL-codiert sein
+        $this->assertStringContainsString('Normal: manager@example.com', $result);
+        
+        // Encoded-Version sollte URL-codiert sein
+        $this->assertStringContainsString('URL-codiert: manager%40example.com', $result);
+    }
 }

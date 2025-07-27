@@ -68,6 +68,8 @@ class EmailService
 
     /**
      * Renders a template and URL-encodes all placeholder values.
+     * E-Mail-Adressen werden nicht URL-codiert, da sie oft als normale E-Mail-Adressen verwendet werden.
+     * Für URL-codierte E-Mails verwenden Sie {{managerEmailEncoded}} und {{buddyEmailEncoded}}.
      */
     public function renderUrlEncodedTemplate(string $template, OnboardingTask $task): string
     {
@@ -80,9 +82,11 @@ class EmailService
             '{{onboardingId}}' => rawurlencode((string) ($onboarding?->getId() ?? '')),
             '{{taskId}}'       => rawurlencode((string) ($task->getId() ?? '')),
             '{{manager}}'      => rawurlencode($onboarding?->getManager() ?? ''),
-            '{{managerEmail}}'      => rawurlencode($onboarding?->getManagerEmail() ?? ''),
+            '{{managerEmail}}'      => $onboarding?->getManagerEmail() ?? '', // Nicht URL-codiert
+            '{{managerEmailEncoded}}'=> rawurlencode($onboarding?->getManagerEmail() ?? ''), // URL-codiert für spezielle Fälle
             '{{buddy}}'        => rawurlencode($onboarding?->getBuddy() ?? ''),
-            '{{buddyEmail}}'  => rawurlencode($onboarding?->getBuddyEmail() ?? ''),
+            '{{buddyEmail}}'  => $onboarding?->getBuddyEmail() ?? '', // Nicht URL-codiert
+            '{{buddyEmailEncoded}}' => rawurlencode($onboarding?->getBuddyEmail() ?? ''), // URL-codiert für spezielle Fälle
             '{{onboardingLink}}' => rawurlencode($onboarding ? $this->urlGenerator->generate(
                 'app_onboarding_detail',
                 ['id' => $onboarding->getId()],
