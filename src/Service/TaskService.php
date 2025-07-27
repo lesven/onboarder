@@ -101,8 +101,8 @@ class TaskService
             $dueDate = $request->request->get('dueDate');
             if ($dueDate) {
                 try {
-                    $dateTime = new DateTimeImmutable($dueDate);
-                    if ($dateTime->format('Y-m-d') === $dueDate) {
+                    $dateTime = DateTimeImmutable::createFromFormat('Y-m-d', $dueDate);
+                    if ($dateTime && $dateTime->format('Y-m-d') === $dueDate) {
                         $task->setDueDate($dateTime);
                     }
                 } catch (\Exception) {
