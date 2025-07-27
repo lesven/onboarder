@@ -1,3 +1,0 @@
-services:
-  phpmyadmin:
-    platform: linux/arm64/v8  # für Apple Silicon Macs
