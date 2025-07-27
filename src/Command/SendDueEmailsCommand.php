@@ -26,7 +26,10 @@ class SendDueEmailsCommand extends Command
 
         /** @var \App\Repository\OnboardingTaskRepository $repo */
         $repo = $this->entityManager->getRepository(OnboardingTask::class);
-        $tasks = $repo->findTasksDueForDate($today);
+        $tasks = array_filter(
+            $repo->findTasksDueForDate($today),
+            static fn(OnboardingTask $t) => OnboardingTask::ACTION_EMAIL === $t->getActionType()
+        );
 
         foreach ($tasks as $task) {
             /* @var OnboardingTask $task */

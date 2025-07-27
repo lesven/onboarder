@@ -126,7 +126,11 @@ class TaskRequestMappingService
      */
     private function applyEmailFromRequest(OnboardingTask $task, Request $request): void
     {
-        if ($request->request->get('sendEmail')) {
+        $actionType = $request->request->get('actionType', OnboardingTask::ACTION_NONE);
+        $task->setActionType($actionType);
+        $task->setApiUrl($request->request->get('apiUrl'));
+
+        if (OnboardingTask::ACTION_EMAIL === $actionType) {
             $task->setSendEmail(true);
             $task->setEmailTemplate($request->request->get('emailTemplate'));
         } else {

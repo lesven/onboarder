@@ -89,18 +89,27 @@
             <div class="col-md-4">
                 <div class="card mb-3">
                     <div class="card-header">
-                        <h5 class="card-title mb-0">E-Mail-Benachrichtigung</h5>
+                        <h5 class="card-title mb-0">Aktion bei Fälligkeit</h5>
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="sendEmail" name="sendEmail" {% if edit and task.sendEmail %}checked{% endif %}>
-                                <label class="form-check-label" for="sendEmail">E-Mail senden</label>
-                            </div>
+                            <label for="actionType" class="form-label">Aktion</label>
+                            <select class="form-select" id="actionType" name="actionType">
+                                <option value="none" {% if not edit or task.actionType == 'none' %}selected{% endif %}>Keine Aktion</option>
+                                <option value="email" {% if edit and task.actionType == 'email' %}selected{% endif %}>E-Mail senden</option>
+                                <option value="api" {% if edit and task.actionType == 'api' %}selected{% endif %}>API Call (CURL)</option>
+                            </select>
                         </div>
                         <div class="mb-3" id="emailTemplateGroup" style="display: none;">
                             <label for="emailTemplate" class="form-label">E-Mail-Template</label>
                             <textarea class="form-control" id="emailTemplate" name="emailTemplate" rows="4" placeholder="HTML-Template für die E-Mail...">{{ edit ? task.emailTemplate : '' }}</textarea>
+                        </div>
+                        <div class="mb-3" id="apiCallGroup" style="display:none;">
+                            <label for="apiUrl" class="form-label">CURL-Befehl</label>
+                            <textarea class="form-control" id="apiUrl" name="apiUrl" rows="3" placeholder="curl ...">{{ edit ? task.apiUrl : '' }}</textarea>
+                            <div class="form-text">
+                                Verfügbare Variablen werden URL-encodiert ersetzt.
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -131,13 +140,16 @@
         dueDateRadios.forEach(r => r.addEventListener('change', toggleDueDate));
         toggleDueDate();
 
-        const sendEmailCheckbox = document.getElementById('sendEmail');
+        const actionSelect = document.getElementById('actionType');
         const emailTemplateGroup = document.getElementById('emailTemplateGroup');
-        function toggleEmail() {
-            emailTemplateGroup.style.display = sendEmailCheckbox.checked ? 'block' : 'none';
+        const apiCallGroup = document.getElementById('apiCallGroup');
+        function toggleAction() {
+            const val = actionSelect.value;
+            emailTemplateGroup.style.display = val === 'email' ? 'block' : 'none';
+            apiCallGroup.style.display = val === 'api' ? 'block' : 'none';
         }
-        sendEmailCheckbox.addEventListener('change', toggleEmail);
-        toggleEmail();
+        actionSelect.addEventListener('change', toggleAction);
+        toggleAction();
     });
 </script>
 {% endblock %}

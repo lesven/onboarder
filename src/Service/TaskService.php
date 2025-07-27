@@ -131,8 +131,11 @@ class TaskService
             }
         }
 
-        $sendEmail = $request->request->get('sendEmail');
-        if ($sendEmail) {
+        $actionType = $request->request->get('actionType', Task::ACTION_NONE);
+        $task->setActionType($actionType);
+        $task->setApiUrl($request->request->get('apiUrl'));
+
+        if (Task::ACTION_EMAIL === $actionType) {
             $template = $request->request->get('emailTemplate');
             $uploadedFile = $request->files->get('emailTemplateFile');
             if ($uploadedFile && $uploadedFile->isValid()) {
