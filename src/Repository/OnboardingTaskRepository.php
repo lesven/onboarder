@@ -75,7 +75,7 @@ class OnboardingTaskRepository extends ServiceEntityRepository
 
         return $this->createQueryBuilder('ot')
             ->leftJoin('ot.onboarding', 'o')
-            ->where('ot.actionType != :none')
+            ->where('ot.taskAction IS NOT NULL OR ot.actionType != :none')
             ->andWhere('ot.emailSentAt IS NULL')
             ->andWhere('(
                 (ot.dueDate IS NOT NULL AND ot.dueDate < :end) OR

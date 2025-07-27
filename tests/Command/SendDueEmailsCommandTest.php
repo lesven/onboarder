@@ -36,14 +36,17 @@ class SendDueEmailsCommandTest extends TestCase
 
     public function testExecuteSendsEmailsForDueTasks(): void
     {
-        $task1 = (new OnboardingTask())
-            ->setActionType(OnboardingTask::ACTION_EMAIL)
+        $task1 = new OnboardingTask();
+        $action1 = (new \App\Entity\Action\EmailAction())
             ->setAssignedEmail('a@example.com')
             ->setEmailTemplate('tpl');
-        $task2 = (new OnboardingTask())
-            ->setActionType(OnboardingTask::ACTION_EMAIL)
+        $task1->setTaskAction($action1);
+
+        $task2 = new OnboardingTask();
+        $action2 = (new \App\Entity\Action\EmailAction())
             ->setAssignedEmail('b@example.com')
             ->setEmailTemplate('tpl2');
+        $task2->setTaskAction($action2);
 
         $this->repository
             ->method('findTasksDueForDate')
@@ -67,9 +70,9 @@ class SendDueEmailsCommandTest extends TestCase
 
     public function testExecuteSkipsTasksWithoutRecipient(): void
     {
-        $task = (new OnboardingTask())
-            ->setActionType(OnboardingTask::ACTION_EMAIL)
-            ->setEmailTemplate('tpl');
+        $task = new OnboardingTask();
+        $task->setTaskAction((new \App\Entity\Action\EmailAction())
+            ->setEmailTemplate('tpl'));
 
         $this->repository
             ->method('findTasksDueForDate')

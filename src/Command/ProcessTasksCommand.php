@@ -29,47 +29,36 @@ class ProcessTasksCommand extends Command
         $tasks = $repo->findTasksDueForDate($today);
 
         foreach ($tasks as $task) {
-            try {
+            $action = $task->getTaskAction();
+
+            if (null === $action) {
+                // Fallback to legacy fields
                 switch ($task->getActionType()) {
                     case OnboardingTask::ACTION_EMAIL:
-                        $recipient = $task->getFinalAssignedEmail();
-                        if (null === $recipient) {
-                            continue 2;
-                        }
-                        $content = $task->getEmailTemplate() ?? '';
-                        $content = $this->emailService->renderTemplate($content, $task);
-                        $this->emailService->sendEmail(
-                            $recipient,
-                            'Aufgabe fällig: '.$task->getTitle(),
-                            $content
-                        );
-                        $task->setEmailSentAt(new \DateTimeImmutable());
+                        $action = (new \App\Entity\Action\EmailAction())
+                            ->setEmailTemplate($task->getEmailTemplate())
+                            ->setAssignedEmail($task->getAssignedEmail());
                         break;
                     case OnboardingTask::ACTION_API:
-                        $commandTemplate = $task->getApiUrl();
-                        if (!$commandTemplate) {
-                            continue 2;
-                        }
-                        $command = $this->emailService->renderUrlEncodedTemplate($commandTemplate, $task);
-
-                        // Normalisiere den curl-Befehl zu einer einzigen Zeile
-                        $command = str_replace([' \\', '\\ ', '\n', '\r'], [' ', ' ', ' ', ''], $command);
-                        $command = preg_replace('/\s+/', ' ', trim($command));
-
-                        $output->writeln('<info>Executing API call: '.$command.'</info>');
-
-                        exec($command, $commandOutput, $exitCode);
-
-                        if (0 !== $exitCode) {
-                            $output->writeln('<error>Command output: '.implode("\n", $commandOutput).'</error>');
-                            throw new \RuntimeException('API call failed with exit code '.$exitCode);
-                        }
-                        $output->writeln('<info>API call successful. Output: '.implode("\n", $commandOutput).'</info>');
-                        $task->setEmailSentAt(new \DateTimeImmutable());
+                        $action = (new \App\Entity\Action\ApiCallAction())
+                            ->setApiUrl($task->getApiUrl());
                         break;
                     default:
+                        $action = null;
                         break;
                 }
+            }
+
+            if (!$action) {
+                continue;
+            }
+
+            try {
+                if ($action instanceof \App\Entity\Action\EmailAction || $action instanceof \App\Entity\Action\ApiCallAction) {
+                    $action->setEmailService($this->emailService);
+                }
+                $action->execute($task);
+                $task->setEmailSentAt(new \DateTimeImmutable());
             } catch (\Throwable $e) {
                 $output->writeln('<error>'.$e->getMessage().'</error>');
             }

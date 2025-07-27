@@ -42,6 +42,8 @@ class OnboardingTask
     #[ORM\Column(nullable: true)]
     private ?int $dueDaysFromEntry = null;
 
+    private ?\App\Entity\Action\TaskActionInterface $taskAction = null;
+
     // Zuständigkeit
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $assignedEmail = null;
@@ -194,6 +196,18 @@ class OnboardingTask
         return $this;
     }
 
+    public function getTaskAction(): ?\App\Entity\Action\TaskActionInterface
+    {
+        return $this->taskAction;
+    }
+
+    public function setTaskAction(?\App\Entity\Action\TaskActionInterface $taskAction): static
+    {
+        $this->taskAction = $taskAction;
+
+        return $this;
+    }
+
     public function getAssignedEmail(): ?string
     {
         return $this->assignedEmail;
@@ -211,6 +225,10 @@ class OnboardingTask
      */
     public function getFinalAssignedEmail(): ?string
     {
+        if ($this->taskAction instanceof \App\Entity\Action\EmailAction && $this->taskAction->getAssignedEmail()) {
+            return $this->taskAction->getAssignedEmail();
+        }
+
         if ($this->assignedEmail) {
             return $this->assignedEmail;
         }

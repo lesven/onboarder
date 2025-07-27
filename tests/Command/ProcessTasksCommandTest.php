@@ -8,6 +8,13 @@ function exec(string $command, ?array &$output = null, ?int &$exitCode = null): 
     \App\Tests\Command\ProcessTasksCommandTest::recordExec($command, $output, $exitCode);
 }
 
+namespace App\Entity\Action;
+
+function exec(string $command, ?array &$output = null, ?int &$exitCode = null): void
+{
+    \App\Tests\Command\ProcessTasksCommandTest::recordExec($command, $output, $exitCode);
+}
+
 namespace App\Tests\Command;
 
 use App\Command\ProcessTasksCommand;
@@ -54,14 +61,16 @@ class ProcessTasksCommandTest extends TestCase
 
     public function testExecuteProcessesEmailAndApiTasks(): void
     {
-        $taskEmail = (new OnboardingTask())
-            ->setActionType(OnboardingTask::ACTION_EMAIL)
+        $taskEmail = (new OnboardingTask());
+        $emailAction = (new \App\Entity\Action\EmailAction())
             ->setAssignedEmail('a@example.com')
             ->setEmailTemplate('tpl');
+        $taskEmail->setTaskAction($emailAction);
 
-        $taskApi = (new OnboardingTask())
-            ->setActionType(OnboardingTask::ACTION_API)
+        $taskApi = (new OnboardingTask());
+        $apiAction = (new \App\Entity\Action\ApiCallAction())
             ->setApiUrl('curl http://example.com');
+        $taskApi->setTaskAction($apiAction);
 
         $this->repo->method('findTasksDueForDate')->willReturn([$taskEmail, $taskApi]);
 

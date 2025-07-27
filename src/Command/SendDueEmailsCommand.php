@@ -26,27 +26,19 @@ class SendDueEmailsCommand extends Command
 
         /** @var \App\Repository\OnboardingTaskRepository $repo */
         $repo = $this->entityManager->getRepository(OnboardingTask::class);
-        $tasks = array_filter(
-            $repo->findTasksDueForDate($today),
-            static fn (OnboardingTask $t) => OnboardingTask::ACTION_EMAIL === $t->getActionType()
-        );
+        $tasks = $repo->findTasksDueForDate($today);
 
         foreach ($tasks as $task) {
-            /* @var OnboardingTask $task */
-            $recipient = $task->getFinalAssignedEmail();
-            if (null === $recipient) {
+            $action = $task->getTaskAction();
+
+            if (!$action instanceof \App\Entity\Action\EmailAction) {
                 continue;
             }
 
-            try {
-                $content = $task->getEmailTemplate() ?? '';
-                $content = $this->emailService->renderTemplate($content, $task);
+            $action->setEmailService($this->emailService);
 
-                $this->emailService->sendEmail(
-                    $recipient,
-                    'Aufgabe fällig: '.$task->getTitle(),
-                    $content
-                );
+            try {
+                $action->execute($task);
                 $task->setEmailSentAt(new \DateTimeImmutable());
             } catch (\Throwable $e) {
                 $output->writeln('<error>'.$e->getMessage().'</error>');
