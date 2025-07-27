@@ -32,11 +32,13 @@ class UserCommand extends Command
 
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $output->writeln('<error>Ungültige E-Mail-Adresse.</error>');
+
             return Command::FAILURE;
         }
 
         if (strlen($password) < 8) {
             $output->writeln('<error>Passwort muss mindestens 8 Zeichen lang sein.</error>');
+
             return Command::FAILURE;
         }
 

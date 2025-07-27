@@ -68,12 +68,12 @@ class UserController extends AbstractController
 
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 $this->addFlash('error', 'Ungültige E-Mail-Adresse.');
-            } elseif ($password !== '' && strlen($password) < 8) {
+            } elseif ('' !== $password && strlen($password) < 8) {
                 $this->addFlash('error', 'Passwort muss mindestens 8 Zeichen haben.');
             } else {
                 $user->setUsername($email);
                 $user->setEmail($email);
-                if ($password !== '') {
+                if ('' !== $password) {
                     $user->setPassword($hasher->hashPassword($user, $password));
                 }
 

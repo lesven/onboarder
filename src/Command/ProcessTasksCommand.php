@@ -40,7 +40,7 @@ class ProcessTasksCommand extends Command
                         $content = $this->emailService->renderTemplate($content, $task);
                         $this->emailService->sendEmail(
                             $recipient,
-                            'Aufgabe fällig: ' . $task->getTitle(),
+                            'Aufgabe fällig: '.$task->getTitle(),
                             $content
                         );
                         $task->setEmailSentAt(new \DateTimeImmutable());
@@ -51,27 +51,27 @@ class ProcessTasksCommand extends Command
                             continue 2;
                         }
                         $command = $this->emailService->renderUrlEncodedTemplate($commandTemplate, $task);
-                        
+
                         // Normalisiere den curl-Befehl zu einer einzigen Zeile
                         $command = str_replace([' \\', '\\ ', '\n', '\r'], [' ', ' ', ' ', ''], $command);
                         $command = preg_replace('/\s+/', ' ', trim($command));
-                        
-                        $output->writeln('<info>Executing API call: ' . $command . '</info>');
-                        
+
+                        $output->writeln('<info>Executing API call: '.$command.'</info>');
+
                         exec($command, $commandOutput, $exitCode);
-                        
+
                         if (0 !== $exitCode) {
-                            $output->writeln('<error>Command output: ' . implode("\n", $commandOutput) . '</error>');
-                            throw new \RuntimeException('API call failed with exit code ' . $exitCode);
+                            $output->writeln('<error>Command output: '.implode("\n", $commandOutput).'</error>');
+                            throw new \RuntimeException('API call failed with exit code '.$exitCode);
                         }
-                        $output->writeln('<info>API call successful. Output: ' . implode("\n", $commandOutput) . '</info>');
+                        $output->writeln('<info>API call successful. Output: '.implode("\n", $commandOutput).'</info>');
                         $task->setEmailSentAt(new \DateTimeImmutable());
                         break;
                     default:
                         break;
                 }
             } catch (\Throwable $e) {
-                $output->writeln('<error>' . $e->getMessage() . '</error>');
+                $output->writeln('<error>'.$e->getMessage().'</error>');
             }
         }
 

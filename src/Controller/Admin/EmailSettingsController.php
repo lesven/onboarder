@@ -20,7 +20,7 @@ class EmailSettingsController extends AbstractController
         PasswordEncryptionService $encryptionService
     ): Response {
         $settings = $entityManager->getRepository(EmailSettings::class)->findOneBy([]) ?? new EmailSettings();
-        
+
         // Setze den Verschlüsselungsservice in die Entity
         $settings->setEncryptionService($encryptionService);
 
@@ -28,11 +28,11 @@ class EmailSettingsController extends AbstractController
             $settings->setSmtpHost($request->request->get('smtpHost'));
             $settings->setSmtpPort((int) $request->request->get('smtpPort'));
             $settings->setSmtpUsername($request->request->get('smtpUsername') ?: null);
-            
+
             // Behandle Passwort-Logik
             $clearPassword = $request->request->getBoolean('clearPassword');
             $newPassword = $request->request->get('smtpPassword');
-            
+
             if ($clearPassword) {
                 // Passwort explizit auf null setzen
                 $settings->setSmtpPassword(null);
@@ -41,7 +41,7 @@ class EmailSettingsController extends AbstractController
                 $settings->setSmtpPassword($newPassword);
             }
             // Wenn weder clearPassword noch newPassword: aktuelles Passwort beibehalten
-            
+
             $settings->setIgnoreSslCertificate($request->request->getBoolean('ignoreSsl'));
             $settings->setUpdatedAt(new \DateTimeImmutable());
 

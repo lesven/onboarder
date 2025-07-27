@@ -38,6 +38,7 @@ class EncryptSmtpPasswordsCommand extends Command
 
         if (empty($rows)) {
             $io->success('Keine SMTP-Passwörter zum Verschlüsseln gefunden.');
+
             return Command::SUCCESS;
         }
 
@@ -46,21 +47,21 @@ class EncryptSmtpPasswordsCommand extends Command
 
         foreach ($rows as $row) {
             $currentPassword = $row['smtp_password'];
-            
+
             // Prüfe ob bereits verschlüsselt
             if ($this->encryptionService->isEncrypted($currentPassword)) {
-                $skippedCount++;
+                ++$skippedCount;
                 continue;
             }
 
             // Verschlüssele das Passwort
             $encryptedPassword = $this->encryptionService->encrypt($currentPassword);
-            
+
             // Aktualisiere direkt in der Datenbank
             $updateSql = 'UPDATE email_settings SET smtp_password = ? WHERE id = ?';
             $connection->executeStatement($updateSql, [$encryptedPassword, $row['id']]);
-            
-            $encryptedCount++;
+
+            ++$encryptedCount;
         }
 
         $io->success(sprintf(

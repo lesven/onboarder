@@ -28,7 +28,7 @@ class SendDueEmailsCommand extends Command
         $repo = $this->entityManager->getRepository(OnboardingTask::class);
         $tasks = array_filter(
             $repo->findTasksDueForDate($today),
-            static fn(OnboardingTask $t) => OnboardingTask::ACTION_EMAIL === $t->getActionType()
+            static fn (OnboardingTask $t) => OnboardingTask::ACTION_EMAIL === $t->getActionType()
         );
 
         foreach ($tasks as $task) {
@@ -44,12 +44,12 @@ class SendDueEmailsCommand extends Command
 
                 $this->emailService->sendEmail(
                     $recipient,
-                    'Aufgabe fällig: ' . $task->getTitle(),
+                    'Aufgabe fällig: '.$task->getTitle(),
                     $content
                 );
                 $task->setEmailSentAt(new \DateTimeImmutable());
             } catch (\Throwable $e) {
-                $output->writeln('<error>' . $e->getMessage() . '</error>');
+                $output->writeln('<error>'.$e->getMessage().'</error>');
             }
         }
 
@@ -59,4 +59,3 @@ class SendDueEmailsCommand extends Command
         return Command::SUCCESS;
     }
 }
-

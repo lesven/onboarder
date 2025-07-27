@@ -24,8 +24,6 @@ install: ## Baut Container, installiert Abhängigkeiten und führt Setup aus
 	@echo "Räume Cache manuell auf..."
 	$(DOCKER_COMPOSE) exec --workdir /var/www/html app rm -rf var/cache/* || true
 	@echo "Installation abgeschlossen!"
-	$(DOCKER_COMPOSE) exec --workdir /var/www/html app /usr/local/bin/php-cs-fixer fix --dry-run --diff --allow-risky=yes
-	@echo "CS Fixer abgeschlossen!"
 	make cache
 	make setup-direct
 

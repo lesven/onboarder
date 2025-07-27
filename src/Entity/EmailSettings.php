@@ -44,7 +44,7 @@ class EmailSettings
     }
 
     /**
-     * Setzt den Verschlüsselungsservice (wird durch Dependency Injection gesetzt)
+     * Setzt den Verschlüsselungsservice (wird durch Dependency Injection gesetzt).
      */
     public function setEncryptionService(PasswordEncryptionService $encryptionService): void
     {
@@ -94,19 +94,19 @@ class EmailSettings
 
     public function getSmtpPassword(): ?string
     {
-        if ($this->encryptionService === null) {
+        if (null === $this->encryptionService) {
             $this->encryptionService = new PasswordEncryptionService();
         }
-        
+
         return $this->encryptionService->decrypt($this->smtpPassword);
     }
 
     public function setSmtpPassword(?string $smtpPassword): static
     {
-        if ($this->encryptionService === null) {
+        if (null === $this->encryptionService) {
             $this->encryptionService = new PasswordEncryptionService();
         }
-        
+
         $this->smtpPassword = $this->encryptionService->encrypt($smtpPassword);
 
         return $this;

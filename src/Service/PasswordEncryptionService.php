@@ -5,7 +5,7 @@ namespace App\Service;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 /**
- * Service für die Verschlüsselung und Entschlüsselung von Passwörtern
+ * Service für die Verschlüsselung und Entschlüsselung von Passwörtern.
  */
 class PasswordEncryptionService
 {
@@ -16,11 +16,11 @@ class PasswordEncryptionService
     {
         // Verwende APP_SECRET als Basis für den Verschlüsselungsschlüssel
         $appSecret = $params->get('kernel.secret');
-        $this->encryptionKey = hash('sha256', $appSecret . 'password-encryption-salt');
+        $this->encryptionKey = hash('sha256', $appSecret.'password-encryption-salt');
     }
 
     /**
-     * Verschlüsselt ein Passwort
+     * Verschlüsselt ein Passwort.
      */
     public function encrypt(?string $password): ?string
     {
@@ -35,19 +35,19 @@ class PasswordEncryptionService
 
         $ivLength = openssl_cipher_iv_length($this->cipher);
         $iv = openssl_random_pseudo_bytes($ivLength);
-        
+
         $encrypted = openssl_encrypt($password, $this->cipher, $this->encryptionKey, 0, $iv);
-        
-        if ($encrypted === false) {
+
+        if (false === $encrypted) {
             throw new \RuntimeException('Fehler beim Verschlüsseln des Passworts');
         }
 
         // Präfix hinzufügen um verschlüsselte Passwörter zu identifizieren
-        return 'enc:' . base64_encode($iv . $encrypted);
+        return 'enc:'.base64_encode($iv.$encrypted);
     }
 
     /**
-     * Entschlüsselt ein Passwort
+     * Entschlüsselt ein Passwort.
      */
     public function decrypt(?string $encryptedPassword): ?string
     {
@@ -63,8 +63,8 @@ class PasswordEncryptionService
         // Entferne Präfix
         $encryptedData = substr($encryptedPassword, 4);
         $data = base64_decode($encryptedData);
-        
-        if ($data === false) {
+
+        if (false === $data) {
             throw new \RuntimeException('Fehler beim Dekodieren des verschlüsselten Passworts');
         }
 
@@ -73,8 +73,8 @@ class PasswordEncryptionService
         $encrypted = substr($data, $ivLength);
 
         $decrypted = openssl_decrypt($encrypted, $this->cipher, $this->encryptionKey, 0, $iv);
-        
-        if ($decrypted === false) {
+
+        if (false === $decrypted) {
             throw new \RuntimeException('Fehler beim Entschlüsseln des Passworts');
         }
 
@@ -82,7 +82,7 @@ class PasswordEncryptionService
     }
 
     /**
-     * Prüft ob ein Passwort bereits verschlüsselt ist
+     * Prüft ob ein Passwort bereits verschlüsselt ist.
      */
     public function isEncrypted(?string $password): bool
     {

@@ -45,8 +45,8 @@ class EmailService
             '{{firstName}}'    => $onboarding?->getFirstName() ?? '',
             '{{lastName}}'     => $onboarding?->getLastName() ?? '',
             '{{entryDate}}'    => $onboarding?->getEntryDate()?->format('Y-m-d') ?? '',
-            '{{onboardingId}}' => (string)($onboarding?->getId() ?? ''),
-            '{{taskId}}'       => (string)($task->getId() ?? ''),
+            '{{onboardingId}}' => (string) ($onboarding?->getId() ?? ''),
+            '{{taskId}}'       => (string) ($task->getId() ?? ''),
             '{{manager}}'      => $onboarding?->getManager() ?? '',
             '{{managerEmail}}'      => $onboarding?->getManagerEmail() ?? '',
             '{{buddy}}'        => $onboarding?->getBuddy() ?? '',
@@ -77,8 +77,8 @@ class EmailService
             '{{firstName}}'    => rawurlencode($onboarding?->getFirstName() ?? ''),
             '{{lastName}}'     => rawurlencode($onboarding?->getLastName() ?? ''),
             '{{entryDate}}'    => rawurlencode($onboarding?->getEntryDate()?->format('Y-m-d') ?? ''),
-            '{{onboardingId}}' => rawurlencode((string)($onboarding?->getId() ?? '')),
-            '{{taskId}}'       => rawurlencode((string)($task->getId() ?? '')),
+            '{{onboardingId}}' => rawurlencode((string) ($onboarding?->getId() ?? '')),
+            '{{taskId}}'       => rawurlencode((string) ($task->getId() ?? '')),
             '{{manager}}'      => rawurlencode($onboarding?->getManager() ?? ''),
             '{{managerEmail}}'      => rawurlencode($onboarding?->getManagerEmail() ?? ''),
             '{{buddy}}'        => rawurlencode($onboarding?->getBuddy() ?? ''),
@@ -108,7 +108,8 @@ class EmailService
         $settings->setEncryptionService($this->encryptionService);
 
         if ($settings->getSmtpUsername() && $settings->getSmtpPassword()) {
-            $dsn = sprintf('smtp://%s:%s@%s:%d',
+            $dsn = sprintf(
+                'smtp://%s:%s@%s:%d',
                 urlencode((string) $settings->getSmtpUsername()),
                 urlencode((string) $settings->getSmtpPassword()),
                 $settings->getSmtpHost(),

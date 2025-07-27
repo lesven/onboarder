@@ -300,7 +300,7 @@ class SettingsController extends AbstractController
     public function deleteRole(Request $request, Role $role, EntityManagerInterface $entityManager): Response
     {
         $csrfToken = $request->request->get('_csrf_token');
-        
+
         $entityManager->remove($role);
         $entityManager->flush();
 
