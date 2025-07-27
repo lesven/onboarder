@@ -65,9 +65,13 @@ check: ## Führt Code-Quality-Checks aus
 	$(DOCKER_COMPOSE) exec app php bin/console lint:twig templates/
 	$(DOCKER_COMPOSE) exec app php bin/console lint:yaml config/
 	$(DOCKER_COMPOSE) exec app vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+	$(DOCKER_COMPOSE) exec app vendor/bin/phpmd src text phpmd.xml
 
 phpstan: ## Führt statische Analyse mit PHPStan aus
 	$(DOCKER_COMPOSE) exec app vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+
+phpmd: ## Führt PHP Mess Detector aus
+	$(DOCKER_COMPOSE) exec app vendor/bin/phpmd src text phpmd.xml
 
 check-all: ## Führt alle Quality-Checks und Tests aus
 	make check
