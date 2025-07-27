@@ -57,7 +57,11 @@ setup: ## Führt das Setup-Skript aus (nach erstem Start)
 	$(DOCKER_COMPOSE) exec app /var/www/html/docker/setup-entities.sh
 
 setup-direct: ## Führt Setup-Befehle direkt aus (Fallback wenn setup-script nicht funktioniert)
-	$(DOCKER_COMPOSE) exec app php bin/console doctrine:migrations:migrate --no-interaction
+	@echo "Markiere alle Migrationen als ausgeführt..."
+	$(DOCKER_COMPOSE) exec app php bin/console doctrine:migrations:sync-metadata-storage
+	$(DOCKER_COMPOSE) exec app php bin/console doctrine:migrations:version --add --all --no-interaction
+	@echo "Aktualisiere Schema direkt..."
+	$(DOCKER_COMPOSE) exec app php bin/console doctrine:schema:update --force
 	$(DOCKER_COMPOSE) exec app php bin/console cache:clear
 	$(DOCKER_COMPOSE) exec app php bin/console doctrine:schema:validate
 	@echo "Setup-Befehle direkt ausgeführt!"
@@ -79,6 +83,15 @@ migration: ## Erstellt neue Migration
 
 migrate: ## Führt Migrationen aus
 	$(DOCKER_COMPOSE) exec app php bin/console doctrine:migrations:migrate --no-interaction
+
+fix-db: ## Repariert Datenbank-Schema bei Problemen mit Migrationen
+	@echo "Markiere alle Migrationen als ausgeführt und aktualisiere Schema..."
+	$(DOCKER_COMPOSE) exec app php bin/console doctrine:migrations:sync-metadata-storage
+	$(DOCKER_COMPOSE) exec app php bin/console doctrine:migrations:version --add --all --no-interaction
+	$(DOCKER_COMPOSE) exec app php bin/console doctrine:schema:update --force
+	$(DOCKER_COMPOSE) exec app php bin/console cache:clear
+	$(DOCKER_COMPOSE) exec app php bin/console doctrine:schema:validate
+	@echo "Datenbank repariert!"
 
 check: ## Führt Code-Quality-Checks aus
 	$(DOCKER_COMPOSE) exec app php-cs-fixer fix --dry-run --diff
