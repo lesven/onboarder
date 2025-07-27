@@ -93,6 +93,24 @@ fix-db: ## Repariert Datenbank-Schema bei Problemen mit Migrationen
 	$(DOCKER_COMPOSE) exec app php bin/console doctrine:schema:validate
 	@echo "Datenbank repariert!"
 
+reset-migrations: ## Löscht alle Migrationen und erstellt eine neue basierend auf aktuellen Entities
+	@echo "Stoppe Container und lösche Datenbank..."
+	$(DOCKER_COMPOSE) down -v
+	@echo "Lösche alle Migration-Dateien..."
+	rm -f migrations/Version*.php
+	@echo "Starte Container neu..."
+	$(DOCKER_COMPOSE) up -d
+	@echo "Warte auf Datenbank..."
+	sleep 10
+	@echo "Erstelle neue Migration basierend auf aktuellen Entities..."
+	$(DOCKER_COMPOSE) exec app php bin/console doctrine:migrations:diff
+	@echo "Führe neue Migration aus..."
+	$(DOCKER_COMPOSE) exec app php bin/console doctrine:migrations:migrate --no-interaction
+	@echo "Validiere Schema..."
+	$(DOCKER_COMPOSE) exec app php bin/console doctrine:schema:validate
+	$(DOCKER_COMPOSE) exec app php bin/console cache:clear
+	@echo "Migrationen erfolgreich zurückgesetzt!"
+
 check: ## Führt Code-Quality-Checks aus
 	$(DOCKER_COMPOSE) exec app php-cs-fixer fix --dry-run --diff
 	$(DOCKER_COMPOSE) exec app php bin/console lint:twig templates/
@@ -147,4 +165,6 @@ ci-install: ## Installation für CI/CD (ohne interaktive Eingaben)
 # make console CMD="cache:clear" - Cache leeren
 # make migration                - Neue Migration erstellen
 # make migrate                  - Migrationen ausführen
+# make reset-migrations         - Alle Migrationen neu erzeugen (nur Development!)
+# make fix-db                   - Datenbank-Schema reparieren
 # make ENV=prod install         - Installation für Produktion
