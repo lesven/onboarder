@@ -27,6 +27,7 @@ install: ## Baut Container, installiert Abhängigkeiten und führt Setup aus
 	$(DOCKER_COMPOSE) exec --workdir /var/www/html app /usr/local/bin/php-cs-fixer fix --dry-run --diff --allow-risky=yes
 	@echo "CS Fixer abgeschlossen!"
 	make cache
+	make setup-direct
 
 cache: ## Leert den Symfony Cache
 	$(DOCKER_COMPOSE) exec app php bin/console cache:clear
