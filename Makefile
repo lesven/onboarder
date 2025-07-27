@@ -1,4 +1,4 @@
-.PHONY: help start stop install setup shell console logs clean migration migrate
+.PHONY: help start stop install setup shell console logs clean migration migrate phpstan
 
 # Docker Compose Command (kann für CI überschrieben werden)
 DOCKER_COMPOSE := docker compose
@@ -64,6 +64,10 @@ check: ## Führt Code-Quality-Checks aus
 	$(DOCKER_COMPOSE) exec app php-cs-fixer fix --dry-run --diff
 	$(DOCKER_COMPOSE) exec app php bin/console lint:twig templates/
 	$(DOCKER_COMPOSE) exec app php bin/console lint:yaml config/
+	$(DOCKER_COMPOSE) exec app vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+
+phpstan: ## Führt statische Analyse mit PHPStan aus
+	$(DOCKER_COMPOSE) exec app vendor/bin/phpstan analyse --no-progress --memory-limit=1G
 
 check-all: ## Führt alle Quality-Checks und Tests aus
 	make check
