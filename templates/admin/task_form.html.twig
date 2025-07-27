@@ -192,13 +192,19 @@
                                         &nbsp;&nbsp;&nbsp;&nbsp;"employee": "{{ '{{firstName}}' }} {{ '{{lastName}}' }}",<br>
                                         &nbsp;&nbsp;&nbsp;&nbsp;"entryDate": "{{ '{{entryDate}}' }}",<br>
                                         &nbsp;&nbsp;&nbsp;&nbsp;"manager": "{{ '{{manager}}' }}",<br>
+                                        &nbsp;&nbsp;&nbsp;&nbsp;"managerEmail": "{{ '{{managerEmail}}' }}",<br>
+                                        &nbsp;&nbsp;&nbsp;&nbsp;"buddyEmail": "{{ '{{buddyEmail}}' }}",<br>
                                         &nbsp;&nbsp;&nbsp;&nbsp;"onboardingId": {{ '{{onboardingId}}' }}<br>
                                         &nbsp;&nbsp;}'
                                     </code>
                                 </div>
                                 
                                 <div class="alert alert-warning mt-2">
-                                    <small><strong>Hinweis:</strong> Alle Variablen werden automatisch URL-encodiert. Verwenden Sie diese für sichere API-Aufrufe.</small>
+                                    <small>
+                                        <strong>Variable:</strong> {{firstName}}, {{lastName}}, {{entryDate}}, {{manager}}, {{buddy}}, {{onboardingId}}, {{taskId}}<br>
+                                        <strong>E-Mail-Variablen:</strong> {{managerEmail}}, {{buddyEmail}} (nicht URL-codiert)<br>
+                                        <strong>URL-codierte E-Mails:</strong> {{managerEmailEncoded}}, {{buddyEmailEncoded}} (für URL-Parameter)
+                                    </small>
                                 </div>
                             </div>
                         </div>

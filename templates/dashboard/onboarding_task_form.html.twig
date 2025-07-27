@@ -108,7 +108,9 @@
                             <label for="apiUrl" class="form-label">CURL-Befehl</label>
                             <textarea class="form-control" id="apiUrl" name="apiUrl" rows="3" placeholder="curl ...">{{ edit ? task.apiUrl : '' }}</textarea>
                             <div class="form-text">
-                                Verfügbare Variablen werden URL-encodiert ersetzt.
+                                <strong>Verfügbare Variablen:</strong> {{firstName}}, {{lastName}}, {{entryDate}}, {{manager}}, {{buddy}}, {{onboardingId}}, {{taskId}}<br>
+                                <strong>E-Mail (nicht URL-codiert):</strong> {{managerEmail}}, {{buddyEmail}}<br>
+                                <strong>E-Mail (URL-codiert):</strong> {{managerEmailEncoded}}, {{buddyEmailEncoded}}
                             </div>
                         </div>
                     </div>
