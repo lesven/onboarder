@@ -4,14 +4,16 @@
 ENV ?= dev
 ifeq ($(ENV),prod)
 APP_DEBUG=0
+COMPOSE_FILES=-f docker-compose.yml -f docker-compose.prod.yml
 else
 APP_DEBUG=1
+COMPOSE_FILES=-f docker-compose.yml
 endif
 export APP_ENV=$(ENV)
 export APP_DEBUG
 
 # Docker Compose Command (kann für CI überschrieben werden)
-DOCKER_COMPOSE := docker compose
+DOCKER_COMPOSE := docker compose $(COMPOSE_FILES)
 
 help: ## Zeigt verfügbare Befehle
 	@echo "Verfügbare Befehle:"
@@ -38,8 +40,24 @@ deploy: ## Führt alle Schritte für die Bereitstellung aus
 deploy-prod: ## Bereitstellung für Produktion (ENV=prod wird automatisch gesetzt)
 	git reset --hard HEAD
 	git pull
+	@echo "Aktiviere Produktions-Environment..."
+	cp .env.prod .env.local
 	@$(MAKE) ENV=prod build
 	@$(MAKE) ENV=prod install
+	@echo "Starte Container mit Produktions-Environment neu..."
+	@$(MAKE) ENV=prod restart
+
+switch-to-prod: ## Wechselt zur Produktions-Umgebung
+	@echo "Aktiviere Produktions-Environment..."
+	cp .env.prod .env.local
+	@$(MAKE) ENV=prod restart
+	@echo "Anwendung läuft jetzt im Produktions-Modus!"
+
+switch-to-dev: ## Wechselt zur Development-Umgebung
+	@echo "Aktiviere Development-Environment..."
+	rm -f .env.local
+	@$(MAKE) restart
+	@echo "Anwendung läuft jetzt im Development-Modus!"
 
 install: ## Baut Container, installiert Abhängigkeiten und führt Setup aus
 	$(DOCKER_COMPOSE) up -d --build
@@ -174,4 +192,6 @@ ci-install: ## Installation für CI/CD (ohne interaktive Eingaben)
 # make reset-migrations         - Alle Migrationen neu erzeugen (nur Development!)
 # make fix-db                   - Datenbank-Schema reparieren
 # make deploy-prod              - Produktions-Bereitstellung
+# make switch-to-prod           - Zur Produktion wechseln
+# make switch-to-dev            - Zu Development wechseln
 # make ENV=prod install         - Installation für Produktion

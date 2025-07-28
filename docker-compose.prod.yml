@@ -1,0 +1,6 @@
+services:
+  app:
+    environment:
+      - APP_ENV=prod
+      - APP_DEBUG=0
+      - DATABASE_URL=mysql://onboarder:password@db:3306/onboarder
