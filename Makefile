@@ -35,6 +35,12 @@ deploy: ## Führt alle Schritte für die Bereitstellung aus
 	@$(MAKE) build
 	@$(MAKE) install
 
+deploy-prod: ## Bereitstellung für Produktion (ENV=prod wird automatisch gesetzt)
+	git reset --hard HEAD
+	git pull
+	@$(MAKE) ENV=prod build
+	@$(MAKE) ENV=prod install
+
 install: ## Baut Container, installiert Abhängigkeiten und führt Setup aus
 	$(DOCKER_COMPOSE) up -d --build
 	$(DOCKER_COMPOSE) exec -e APP_ENV=$(ENV) -e APP_DEBUG=$(APP_DEBUG) app composer install $(if $(filter $(ENV),prod),--no-dev --optimize-autoloader,--no-interaction)
@@ -43,7 +49,7 @@ install: ## Baut Container, installiert Abhängigkeiten und führt Setup aus
 	@echo "Räume Cache manuell auf..."
 	$(DOCKER_COMPOSE) exec --workdir /var/www/html app rm -rf var/cache/* || true
 	@echo "Installation abgeschlossen!"
-	make cache
+	$(DOCKER_COMPOSE) exec -e APP_ENV=$(ENV) -e APP_DEBUG=$(APP_DEBUG) app php bin/console cache:clear
 	make setup-direct
 
 cache: ## Leert den Symfony Cache
@@ -58,12 +64,12 @@ setup: ## Führt das Setup-Skript aus (nach erstem Start)
 
 setup-direct: ## Führt Setup-Befehle direkt aus (Fallback wenn setup-script nicht funktioniert)
 	@echo "Markiere alle Migrationen als ausgeführt..."
-	$(DOCKER_COMPOSE) exec app php bin/console doctrine:migrations:sync-metadata-storage
-	$(DOCKER_COMPOSE) exec app php bin/console doctrine:migrations:version --add --all --no-interaction
+	$(DOCKER_COMPOSE) exec -e APP_ENV=$(ENV) -e APP_DEBUG=$(APP_DEBUG) app php bin/console doctrine:migrations:sync-metadata-storage
+	$(DOCKER_COMPOSE) exec -e APP_ENV=$(ENV) -e APP_DEBUG=$(APP_DEBUG) app php bin/console doctrine:migrations:version --add --all --no-interaction
 	@echo "Aktualisiere Schema direkt..."
-	$(DOCKER_COMPOSE) exec app php bin/console doctrine:schema:update --force
-	$(DOCKER_COMPOSE) exec app php bin/console cache:clear
-	$(DOCKER_COMPOSE) exec app php bin/console doctrine:schema:validate
+	$(DOCKER_COMPOSE) exec -e APP_ENV=$(ENV) -e APP_DEBUG=$(APP_DEBUG) app php bin/console doctrine:schema:update --force
+	$(DOCKER_COMPOSE) exec -e APP_ENV=$(ENV) -e APP_DEBUG=$(APP_DEBUG) app php bin/console cache:clear
+	$(DOCKER_COMPOSE) exec -e APP_ENV=$(ENV) -e APP_DEBUG=$(APP_DEBUG) app php bin/console doctrine:schema:validate
 	@echo "Setup-Befehle direkt ausgeführt!"
 
 shell: ## Öffnet Shell im App-Container (bash wenn verfügbar)
@@ -167,4 +173,5 @@ ci-install: ## Installation für CI/CD (ohne interaktive Eingaben)
 # make migrate                  - Migrationen ausführen
 # make reset-migrations         - Alle Migrationen neu erzeugen (nur Development!)
 # make fix-db                   - Datenbank-Schema reparieren
+# make deploy-prod              - Produktions-Bereitstellung
 # make ENV=prod install         - Installation für Produktion
