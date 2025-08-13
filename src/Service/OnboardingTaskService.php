@@ -371,7 +371,7 @@ class OnboardingTaskService
     private function applyRelativeDueDate(OnboardingTask $task, Onboarding $onboarding, Request $request): void
     {
         $days = $request->request->get('dueDaysFromEntry');
-        if (null === $days || '' === $days) {
+        if (empty($days)) {
             $this->clearDueDate($task);
 
             return;

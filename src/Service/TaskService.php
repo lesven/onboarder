@@ -113,7 +113,7 @@ class TaskService
 
         if ('relative' === $dueDateType) {
             $dueDays = $request->request->get('dueDaysFromEntry');
-            $task->setDueDaysFromEntry(null !== $dueDays && '' !== $dueDays ? (int) $dueDays : null);
+            $task->setDueDaysFromEntry(!empty($dueDays) ? (int) $dueDays : null);
         }
 
         // Reset assignments
