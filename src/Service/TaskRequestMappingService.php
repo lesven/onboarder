@@ -83,7 +83,7 @@ class TaskRequestMappingService
             }
         } elseif ('relative' === $dueType) {
             $days = $request->request->get('dueDaysFromEntry');
-            if (null !== $days && '' !== $days) {
+            if (!empty($days)) {
                 $int = (int) $days;
                 $task->setDueDaysFromEntry($int);
                 $entryDate = $onboarding->getEntryDate();
