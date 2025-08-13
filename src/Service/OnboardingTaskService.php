@@ -62,24 +62,30 @@ class OnboardingTaskService
         $blocks = [];
         $processed = [];
 
-        $add = static function (TaskBlock $block) use (&$blocks, &$processed): void {
+        $this->addTaskBlocks($type->getTaskBlocks(), $blocks, $processed);
+
+        if ($base = $type->getBaseType()) {
+            $this->addTaskBlocks($base->getTaskBlocks(), $blocks, $processed);
+        }
+
+        return $blocks;
+    }
+
+    /**
+     * Fügt TaskBlocks der Liste hinzu und vermeidet Duplikate.
+     *
+     * @param TaskBlock[] $taskBlocks
+     * @param TaskBlock[] $blocks
+     * @param int[]       $processed
+     */
+    private function addTaskBlocks(iterable $taskBlocks, array &$blocks, array &$processed): void
+    {
+        foreach ($taskBlocks as $block) {
             if (!in_array($block->getId(), $processed, true)) {
                 $blocks[] = $block;
                 $processed[] = $block->getId();
             }
-        };
-
-        foreach ($type->getTaskBlocks() as $block) {
-            $add($block);
         }
-
-        if ($base = $type->getBaseType()) {
-            foreach ($base->getTaskBlocks() as $block) {
-                $add($block);
-            }
-        }
-
-        return $blocks;
     }
 
     /**
@@ -167,24 +173,26 @@ class OnboardingTaskService
      */
     private function applyStatusFilter(QueryBuilder $qb, string $status): void
     {
-        if ('completed' === $status) {
-            $qb->where('ot.status = :completed')
-               ->setParameter('completed', OnboardingTask::STATUS_COMPLETED);
+        switch ($status) {
+            case 'completed':
+                $qb->where('ot.status = :completed')
+                   ->setParameter('completed', OnboardingTask::STATUS_COMPLETED);
 
-            return;
-        }
+                break;
 
-        if ('overdue' === $status) {
-            $qb->where('ot.status != :completed AND ot.dueDate < :now')
-               ->setParameter('completed', OnboardingTask::STATUS_COMPLETED)
-               ->setParameter('now', new \DateTimeImmutable());
+            case 'overdue':
+                $qb->where('ot.status != :completed AND ot.dueDate < :now')
+                   ->setParameter('completed', OnboardingTask::STATUS_COMPLETED)
+                   ->setParameter('now', new \DateTimeImmutable());
 
-            return;
-        }
+                break;
 
-        if ('all' !== $status) {
-            $qb->where('ot.status != :completed')
-               ->setParameter('completed', OnboardingTask::STATUS_COMPLETED);
+            case 'all':
+                break;
+
+            default:
+                $qb->where('ot.status != :completed')
+                   ->setParameter('completed', OnboardingTask::STATUS_COMPLETED);
         }
     }
 
@@ -233,19 +241,15 @@ class OnboardingTaskService
         if (OnboardingTask::STATUS_COMPLETED === $task->getStatus()) {
             $task->setStatus(OnboardingTask::STATUS_PENDING);
             $task->setCompletedAt(null);
+            $this->entityManager->flush();
 
-            $type = 'info';
-            $message = 'Aufgabe "'.$task->getTitle().'" wurde als ausstehend markiert.';
-        } else {
-            $task->markAsCompleted();
-
-            $type = 'success';
-            $message = 'Aufgabe "'.$task->getTitle().'" wurde als erledigt markiert.';
+            return ['info', 'Aufgabe "'.$task->getTitle().'" wurde als ausstehend markiert.'];
         }
 
+        $task->markAsCompleted();
         $this->entityManager->flush();
 
-        return [$type, $message];
+        return ['success', 'Aufgabe "'.$task->getTitle().'" wurde als erledigt markiert.'];
     }
 
     /**
@@ -335,38 +339,58 @@ class OnboardingTaskService
     private function applyDueDateFromRequest(OnboardingTask $task, Onboarding $onboarding, Request $request): void
     {
         $dueType = $request->request->get('dueDateType', 'none');
+
         if ('fixed' === $dueType) {
-            $dueDate = $request->request->get('dueDate');
-            if ($dueDate) {
-                $task->setDueDate(new \DateTimeImmutable($dueDate));
-                $task->setDueDaysFromEntry(null);
-            } else {
-                $task->setDueDate(null);
-                $task->setDueDaysFromEntry(null);
-            }
+            $this->applyFixedDueDate($task, $request);
 
             return;
         }
 
         if ('relative' === $dueType) {
-            $days = $request->request->get('dueDaysFromEntry');
-            if (null !== $days && '' !== $days) {
-                $int = (int) $days;
-                $task->setDueDaysFromEntry($int);
-                $entryDate = $onboarding->getEntryDate();
-                if ($entryDate) {
-                    $task->setDueDate((clone $entryDate)->modify(sprintf('%+d days', $int)));
-                } else {
-                    $task->setDueDate(null);
-                }
-            } else {
-                $task->setDueDate(null);
-                $task->setDueDaysFromEntry(null);
-            }
+            $this->applyRelativeDueDate($task, $onboarding, $request);
 
             return;
         }
 
+        $this->clearDueDate($task);
+    }
+
+    private function applyFixedDueDate(OnboardingTask $task, Request $request): void
+    {
+        $dueDate = $request->request->get('dueDate');
+        if ($dueDate) {
+            $task->setDueDate(new \DateTimeImmutable($dueDate));
+            $task->setDueDaysFromEntry(null);
+
+            return;
+        }
+
+        $this->clearDueDate($task);
+    }
+
+    private function applyRelativeDueDate(OnboardingTask $task, Onboarding $onboarding, Request $request): void
+    {
+        $days = $request->request->get('dueDaysFromEntry');
+        if (null === $days || '' === $days) {
+            $this->clearDueDate($task);
+
+            return;
+        }
+
+        $int = (int) $days;
+        $task->setDueDaysFromEntry($int);
+        $entryDate = $onboarding->getEntryDate();
+        if ($entryDate) {
+            $task->setDueDate((clone $entryDate)->modify(sprintf('%+d days', $int)));
+
+            return;
+        }
+
+        $task->setDueDate(null);
+    }
+
+    private function clearDueDate(OnboardingTask $task): void
+    {
         $task->setDueDate(null);
         $task->setDueDaysFromEntry(null);
     }
